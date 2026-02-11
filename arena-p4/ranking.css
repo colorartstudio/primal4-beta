@@ -1,0 +1,228 @@
+
+/* =========================================
+   RANKING SYSTEM - PREMIUM DESIGN
+   ========================================= */
+
+/* Modal Premium Base */
+.premium-modal {
+    background: linear-gradient(145deg, rgba(20, 20, 35, 0.98), rgba(30, 30, 50, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(74, 74, 138, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Importante para bordas arredondadas */
+    padding: 0; /* Padding interno controlado pelos filhos */
+}
+
+.modal-header {
+    padding: 1.5rem 2rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(to bottom, rgba(74, 74, 138, 0.1), transparent);
+}
+
+.modal-header h3 {
+    font-size: 2rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(to right, #fff, #a0a0ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 10px rgba(160, 160, 255, 0.3);
+}
+
+.modal-header .subtitle {
+    color: #889;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.text-gold { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+
+/* Tabela Header */
+.ranking-table-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 80px 80px;
+    padding: 1rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    color: #a0a0ff;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.col-rank { text-align: center; }
+.col-player { text-align: left; padding-left: 10px; }
+.col-wins { text-align: center; color: #1dd1a1; font-size: 1.1rem; }
+.col-coins { text-align: right; padding-right: 10px; color: #feca57; font-size: 1.1rem; }
+
+/* Lista de Ranking */
+.ranking-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0.5rem;
+    max-height: 50vh;
+}
+
+.ranking-item {
+    display: grid;
+    grid-template-columns: 50px 1fr 80px 80px;
+    align-items: center;
+    padding: 0.8rem 0.5rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+/* ... (mantendo o resto, mas vou pular para a parte responsiva e player info) ... */
+
+
+.ranking-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Rank Badges & Cores */
+.rank-badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Top 3 Styles */
+.ranking-item.rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+}
+.ranking-item.rank-1 .rank-badge {
+    background: #ffd700;
+    color: #000;
+    box-shadow: 0 0 10px #ffd700;
+}
+
+.ranking-item.rank-2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.1), rgba(192, 192, 192, 0.05));
+    border: 1px solid rgba(192, 192, 192, 0.3);
+}
+.ranking-item.rank-2 .rank-badge {
+    background: #c0c0c0;
+    color: #000;
+    box-shadow: 0 0 10px #c0c0c0;
+}
+
+.ranking-item.rank-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.1), rgba(205, 127, 50, 0.05));
+    border: 1px solid rgba(205, 127, 50, 0.3);
+}
+.ranking-item.rank-3 .rank-badge {
+    background: #cd7f32;
+    color: #000;
+    box-shadow: 0 0 10px #cd7f32;
+}
+
+/* Player Info */
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0; /* Crucial para flexbox ellipsis funcionar */
+    overflow: hidden;
+}
+
+.player-avatar {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.player-name {
+    font-weight: 500;
+    color: #e0e0ff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ranking-item.current-player .player-name {
+    color: #48dbfb;
+    font-weight: bold;
+}
+
+.ranking-item.current-player {
+    background: rgba(72, 219, 251, 0.1);
+    border: 1px solid rgba(72, 219, 251, 0.4);
+    position: relative;
+}
+
+.ranking-item.current-player::after {
+    content: '(Você)';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: #48dbfb;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Stats */
+.stat-value {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+/* Footer do Player (Sticky) */
+.player-rank-footer {
+    background: rgba(0, 0, 0, 0.4);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade Ranking */
+@media (max-width: 600px) {
+    .ranking-table-header, .ranking-item {
+        grid-template-columns: 40px 1fr 50px 60px; /* Mais compacto para mobile */
+        font-size: 0.9rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .ranking-item.current-player::after {
+        display: none;
+    }
+    
+    .col-player, .player-info {
+        /* overflow: hidden; já definido acima */
+        /* white-space: nowrap; já definido acima */
+        /* text-overflow: ellipsis; já definido acima */
+    }
+    
+    .player-name {
+        font-size: 0.85rem;
+    }
+
+    .modal-header h3 {
+        font-size: 1.5rem;
+    }
+}

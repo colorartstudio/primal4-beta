@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primal 4 - Arena dos Elementos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ranking.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Tela de Carregamento -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>PRIMAL 4</h1>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p>Carregando Arena dos Elementos...</p>
+        </div>
+    </div>
+
+    <!-- Tela de Intro / Login (NOVA) -->
+    <div id="intro-screen" class="screen">
+        <canvas id="fireworks-canvas"></canvas>
+        <div class="intro-content">
+            <div class="logo-container-principal">
+                <img src="assets/Logo_Primal_4_Principal.svg" alt="Primal 4 Logo Principal" class="logo-principal-anim">
+            </div>
+            
+            <div class="login-card">
+                <h2>Bem-vindo à Arena</h2>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" placeholder="Nome do Guerreiro" id="login-user">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Senha Secreta" id="login-pass">
+                </div>
+                
+                <div class="login-actions">
+                    <button id="btn-login" class="menu-btn primary glow-effect">
+                        <i class="fas fa-sign-in-alt"></i> Acessar Arena
+                    </button>
+                    <button id="btn-register" class="menu-btn secondary">
+                        <i class="fas fa-user-plus"></i> Criar Conta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Título / Menu Principal -->
+    <div id="title-screen" class="screen hidden">
+        <div class="title-content">
+            <img src="assets/Logo_Primal_4_Horizontal.svg" alt="Primal 4 Logo" class="game-logo-horizontal">
+            <p class="game-subtitle">Arena dos Elementos: Magia e Fúria</p>
+            
+            <div class="menu-options">
+                <button id="btn-solo" class="menu-btn">
+                    <i class="fas fa-user"></i> Jogar Solo
+                </button>
+                <button id="btn-versus" class="menu-btn">
+                    <i class="fas fa-users"></i> Desafiar Amigo
+                </button>
+                <button id="btn-ranking" class="menu-btn">
+                    <i class="fas fa-trophy"></i> Ver Ranking
+                </button>
+                <button id="btn-how-to-play" class="menu-btn">
+                    <i class="fas fa-question-circle"></i> Como Jogar
+                </button>
+            </div>
+
+            <!-- Simulação de Convite -->
+            <div id="invite-section" class="modal-overlay-container hidden">
+                <div class="invite-card">
+                    <h3><i class="fas fa-link"></i> Convite Gerado</h3>
+                    <div class="invite-link">
+                        <code id="invite-link-text">primal4.com/convite/abc123xyz</code>
+                    </div>
+                    <p class="invite-note">(Na Fase 2, este link convidará amigos online. Por agora, inicie o PvP local.)</p>
+                    <button id="btn-start-local" class="menu-btn primary">
+                        <i class="fas fa-play"></i> Iniciar PvP Local
+                    </button>
+                    <button id="btn-cancel" class="menu-btn secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ranking Top 10 -->
+            <div id="ranking-section" class="modal-overlay-container hidden">
+                <div class="ranking-card premium-modal">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-crown text-gold"></i> Hall da Fama</h3>
+                        <p class="subtitle">Os maiores guerreiros da Arena Primal</p>
+                    </div>
+                    
+                    <div class="ranking-table-header">
+                        <span class="col-rank">#</span>
+                        <span class="col-player">Guerreiro</span>
+                        <span class="col-wins"><i class="fas fa-trophy" title="Vitórias"></i></span>
+                        <span class="col-coins"><i class="fas fa-coins" title="Moedas"></i></span>
+                    </div>
+                    
+                    <div id="ranking-list" class="ranking-list-container custom-scroll">
+                        <!-- Ranking será preenchido via JavaScript -->
+                    </div>
+
+                    <div id="player-rank-display" class="player-rank-footer hidden">
+                        <!-- Seu rank aparecerá aqui se não estiver no top 10 -->
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button id="btn-close-ranking" class="menu-btn secondary ripple">
+                            <i class="fas fa-arrow-left"></i> Voltar ao Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Como Jogar -->
+            <div id="how-to-play-section" class="modal-overlay-container hidden">
+                <div class="tutorial-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin-bottom: 0;"><i class="fas fa-gamepad"></i> Como Jogar</h3>
+                        <button id="btn-close-tutorial-top" class="icon-btn" style="background: none; border: none; font-size: 1.5rem; color: #fff; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="controls-section">
+                        <h4>Jogador 1 (WASD)</h4>
+                        <div class="controls-grid">
+                            <div class="control-item">
+                                <span class="key">W</span>
+                                <span>Pular</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">A</span>
+                                <span>Esquerda</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">S</span>
+                                <span>Abaixar</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">D</span>
+                                <span>Direita</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">F</span>
+                                <span>Ataque Básico</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">G</span>
+                                <span>Ataque Especial</span>
+                            </div>
+                        </div>
+
+                        <h4>Jogador 2 (Setas)</h4>
+                        <div class="controls-grid">
+                            <div class="control-item">
+                                <span class="key">↑</span>
+                                <span>Pular</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">←</span>
+                                <span>Esquerda</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">↓</span>
+                                <span>Abaixar</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">→</span>
+                                <span>Direita</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">1</span>
+                                <span>Ataque Básico</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="key">2</span>
+                                <span>Ataque Especial</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="characters-section">
+                        <h4>Elementos dos Personagens</h4>
+                        <div class="character-info">
+                            <div class="char ignis">
+                                <h5>Ignis (Fogo)</h5>
+                                <p>Hitbox de ataque maior, causa dano alto</p>
+                            </div>
+                            <div class="char marina">
+                                <h5>Marina (Água)</h5>
+                                <p>Empurra oponentes (knockback)</p>
+                            </div>
+                            <div class="char terra">
+                                <h5>Terra (Terra)</h5>
+                                <p>Mais pesado, resistente a knockback</p>
+                            </div>
+                            <div class="char zephyr">
+                                <h5>Zephyr (Ar)</h5>
+                                <p>Pulo duplo, velocidade maior</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btn-close-tutorial" class="menu-btn secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="economy-info">
+            <p><i class="fas fa-coins"></i> <strong>Sistema Econômico:</strong> Cada partida custa 100 moedas. 90% vai para o vencedor, 10% para o ecossistema.</p>
+        </div>
+    </div>
+
+    <!-- Tela de Seleção de Personagem -->
+    <div id="character-select-screen" class="screen hidden">
+        <div class="select-content">
+            <h2>Selecione seu Elemento</h2>
+            <p id="select-mode-text">Modo: Solo vs CPU</p>
+            
+            <div class="character-grid">
+                <div class="character-card" data-character="ignis">
+                    <div class="character-preview ignis">
+                        <!-- SVG será carregado aqui via JS -->
+                    </div>
+                    <h3>Ignis</h3>
+                    <p class="element-tag fogo">Fogo</p>
+                    <p class="char-desc">Ataques de maior alcance</p>
+                </div>
+                
+                <div class="character-card" data-character="marina">
+                    <div class="character-preview marina">
+                        <!-- SVG será carregado aqui via JS -->
+                    </div>
+                    <h3>Marina</h3>
+                    <p class="element-tag agua">Água</p>
+                    <p class="char-desc">Knockback poderoso</p>
+                </div>
+                
+                <div class="character-card" data-character="terra">
+                    <div class="character-preview terra">
+                        <!-- SVG será carregado aqui via JS -->
+                    </div>
+                    <h3>Terra</h3>
+                    <p class="element-tag terra">Terra</p>
+                    <p class="char-desc">Resistente e pesado</p>
+                </div>
+                
+                <div class="character-card" data-character="zephyr">
+                    <div class="character-preview zephyr">
+                        <!-- SVG será carregado aqui via JS -->
+                    </div>
+                    <h3>Zephyr</h3>
+                    <p class="element-tag ar">Ar</p>
+                    <p class="char-desc">Velocidade e mobilidade</p>
+                </div>
+            </div>
+            
+            <div class="select-actions">
+                <button id="btn-back-to-menu" class="menu-btn secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <button id="btn-start-fight" class="menu-btn primary" disabled>
+                    <i class="fas fa-fist-raised"></i> Iniciar Batalha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela do Jogo (Canvas) -->
+    <div id="game-screen" class="screen hidden">
+        <div class="game-header">
+            <button id="btn-exit-game" class="icon-btn" style="margin-right: 10px;">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+            <div class="pot-display">
+                <i class="fas fa-coins"></i> <span id="pot-amount">200</span>
+            </div>
+            <div class="timer">
+                <i class="fas fa-clock"></i> <span id="time-count">99</span>
+            </div>
+            <button id="btn-pause" class="icon-btn">
+                <i class="fas fa-pause"></i>
+            </button>
+        </div>
+        
+        <canvas id="game-canvas"></canvas>
+        
+        <div class="hud">
+            <div class="player-hud player1">
+                <div class="player-info">
+                    <div class="player-name">Jogador 1</div>
+                    <div class="player-character ignis">Ignis</div>
+                </div>
+                <div class="health-bar">
+                    <div class="health-fill" id="health-player1"></div>
+                </div>
+            </div>
+            
+            <div class="vs-badge">VS</div>
+            
+            <div class="player-hud player2">
+                <div class="player-info">
+                    <div class="player-name">CPU</div>
+                    <div class="player-character marina">Marina</div>
+                </div>
+                <div class="health-bar">
+                    <div class="health-fill" id="health-player2"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-controls hidden">
+            <div class="mobile-left">
+                <div class="d-pad">
+                    <button class="d-btn up" data-key="KeyW"><i class="fas fa-arrow-up"></i></button>
+                    <button class="d-btn left" data-key="KeyA"><i class="fas fa-arrow-left"></i></button>
+                    <button class="d-btn down" data-key="KeyS"><i class="fas fa-arrow-down"></i></button>
+                    <button class="d-btn right" data-key="KeyD"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            <div class="mobile-right">
+                <button class="action-btn attack" data-key="KeyF">Ataque</button>
+                <button class="action-btn special" data-key="KeyG">Especial</button>
+                <button class="action-btn jump" data-key="Space">Pular</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Pausa -->
+    <div id="pause-screen" class="screen hidden overlay">
+        <div class="pause-content">
+            <h2>Jogo Pausado</h2>
+            <div class="pause-options">
+                <button id="btn-resume" class="menu-btn">
+                    <i class="fas fa-play"></i> Continuar
+                </button>
+                <button id="btn-restart" class="menu-btn">
+                    <i class="fas fa-redo"></i> Reiniciar
+                </button>
+                <button id="btn-quit-to-menu" class="menu-btn">
+                    <i class="fas fa-home"></i> Voltar ao Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Resultado -->
+    <div id="result-screen" class="screen hidden">
+        <div class="result-content">
+            <div id="victory-title" class="result-title">
+                <i class="fas fa-trophy"></i> Vitória!
+            </div>
+            <div id="defeat-title" class="result-title hidden">
+                <i class="fas fa-skull"></i> Derrota
+            </div>
+            
+            <div class="winner-announce">
+                <div id="winner-character" class="character-display ignis"></div>
+                <h3 id="winner-name">Ignis Venceu!</h3>
+            </div>
+            
+            <div class="economy-results">
+                <div class="result-item">
+                    <span class="result-label">Prêmio:</span>
+                    <span class="result-value positive" id="prize-amount">+180 moedas</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Custo da Partida:</span>
+                    <span class="result-value negative" id="match-cost">-100 moedas</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Saldo Final:</span>
+                    <span class="result-value total" id="net-gain">+80 moedas</span>
+                </div>
+                
+                <div class="ecosystem-breakdown">
+                    <h4>Contribuição para o Ecossistema (10%):</h4>
+                    <div class="breakdown-item">
+                        <span>Ecossistema do Jogo:</span>
+                        <span id="eco-game">+1 moeda</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Doação para ONG:</span>
+                        <span id="eco-donation">+1 moeda</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Desenvolvedores:</span>
+                        <span id="eco-devs">+2 moedas</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-actions">
+                <button id="btn-rematch" class="menu-btn">
+                    <i class="fas fa-redo"></i> Revanche
+                </button>
+                <button id="btn-character-select" class="menu-btn">
+                    <i class="fas fa-user"></i> Novo Personagem
+                </button>
+                <button id="btn-back-to-menu-result" class="menu-btn secondary">
+                    <i class="fas fa-home"></i> Menu Principal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

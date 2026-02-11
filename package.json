@@ -1,0 +1,17 @@
+{
+  "name": "primal-4-arena",
+  "version": "1.0.0",
+  "description": "Arena dos Elementos - Primal 4",
+  "main": "index.html",
+  "scripts": {
+    "dev": "http-server arena-p4 -o -c-1",
+    "deploy": "vercel deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "vercel": "^50.14.0"
+  }
+}
