@@ -202,27 +202,42 @@
 /* Responsividade Ranking */
 @media (max-width: 600px) {
     .ranking-table-header, .ranking-item {
-        grid-template-columns: 40px 1fr 50px 60px; /* Mais compacto para mobile */
-        font-size: 0.9rem;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
+        /* Layout flexível: Rank | Nome (Auto) | Vitórias | Moedas (Opcional) */
+        grid-template-columns: 35px 1fr 40px min-content;
+        gap: 5px;
+        font-size: 0.85rem;
+        padding: 0.8rem 0.3rem;
     }
     
     .ranking-item.current-player::after {
         display: none;
     }
     
-    .col-player, .player-info {
-        /* overflow: hidden; já definido acima */
-        /* white-space: nowrap; já definido acima */
-        /* text-overflow: ellipsis; já definido acima */
-    }
+    .col-player { padding-left: 5px; }
+    .col-coins { padding-right: 5px; font-size: 0.8rem; }
+    .col-wins { font-size: 0.9rem; }
     
     .player-name {
         font-size: 0.85rem;
+        max-width: 120px; /* Limite de segurança */
     }
 
     .modal-header h3 {
         font-size: 1.5rem;
     }
+}
+
+/* Telas muito pequenas (iPhone SE / Galaxy Fold) */
+@media (max-width: 360px) {
+    .ranking-table-header, .ranking-item {
+        /* Ocultar Moedas para salvar espaço */
+        grid-template-columns: 30px 1fr 40px 0px; 
+    }
+    
+    .col-coins, .ranking-table-header .col-coins {
+        display: none;
+        visibility: hidden;
+    }
+    
+    .player-name { max-width: 100px; }
 }

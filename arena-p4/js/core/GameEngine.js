@@ -175,7 +175,10 @@ export default class GameEngine {
     updateHUD() {
         // Atualizar barras de vida
         this.players.forEach((player, index) => {
-            const healthPercent = (player.health / 100) * 100;
+            // Usa maxHealth se existir, senão fallback para 900
+            const maxHp = player.maxHealth || 900;
+            const healthPercent = Math.max(0, (player.health / maxHp) * 100);
+            
             const healthBar = document.getElementById(`health-player${index + 1}`);
             if (healthBar) {
                 healthBar.style.width = `${healthPercent}%`;
@@ -438,7 +441,10 @@ export default class GameEngine {
 
         // Aplicar Defesa (Terra Shield)
         if (defender.activePower && defender.element === CHARACTERS.TERRA) {
+            console.log(`[COMBATE] Terra Shield Ativo! Dano Base: ${damage}`);
             damage *= (1 - (defender.damageReduction || 0.75)); // Usa valor dinâmico ou fallback
+            console.log(`[COMBATE] Dano Reduzido (75%): ${damage.toFixed(2)}`);
+            
             knockback = 0; // Imune a knockback
             this.effectsManager.createEffect('earth', defender.x + defender.width/2, defender.y + defender.height/2, 50);
             this.showFloatText('BLOCKED!', defender.x, defender.y - 20, '#32cd32');
@@ -485,8 +491,7 @@ export default class GameEngine {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Desenhar efeitos (atrás das plataformas)
-        this.effectsManager.draw();
+        // Efeitos movidos para o final para garantir visibilidade (z-index)
 
         // Desenhar grade de fundo (Grid)
         ctx.strokeStyle = 'rgba(138, 43, 226, 0.1)';
@@ -533,6 +538,30 @@ export default class GameEngine {
         
         // Desenhar jogadores
         this.players.forEach(player => {
+            // Desenhar Aura de Especial (Se Ativo)
+            if (player.activePower && player.activePower.duration > 0) {
+                const auraColor = this.getEffectColor(player.activePower.type);
+                const pulse = Math.sin(Date.now() / 100) * 5; // Pulso suave
+                
+                ctx.save();
+                ctx.globalAlpha = 0.4;
+                ctx.fillStyle = auraColor;
+                ctx.shadowColor = auraColor;
+                ctx.shadowBlur = 20;
+                
+                // Desenhar aura oval ao redor do personagem
+                ctx.beginPath();
+                ctx.ellipse(
+                    player.x + player.width / 2, 
+                    player.y + player.height / 2, 
+                    (player.width / 1.5) + pulse, 
+                    (player.height / 1.5) + pulse, 
+                    0, 0, Math.PI * 2
+                );
+                ctx.fill();
+                ctx.restore();
+            }
+
             this.drawCharacter(ctx, player);
             
             // Desenhar barra de vida acima do personagem
@@ -546,8 +575,11 @@ export default class GameEngine {
             ctx.fillRect(barX, barY, barWidth, barHeight);
             
             // Vida
-            const healthWidth = (player.health / 100) * barWidth;
-            ctx.fillStyle = player.health > 50 ? '#1dd1a1' : player.health > 25 ? '#feca57' : '#ff6b6b';
+            const maxHp = player.maxHealth || 900;
+            const healthPct = Math.max(0, player.health / maxHp);
+            const healthWidth = healthPct * barWidth;
+            
+            ctx.fillStyle = healthPct > 0.5 ? '#1dd1a1' : healthPct > 0.25 ? '#feca57' : '#ff6b6b';
             ctx.fillRect(barX, barY, healthWidth, barHeight);
             
             // Desenhar efeitos de ataque
@@ -567,8 +599,21 @@ export default class GameEngine {
                 ctx.globalAlpha = 1.0;
             }
         });
+
+        // Desenhar efeitos (ACIMA de tudo para visibilidade)
+        this.effectsManager.draw();
     }
     
+    getEffectColor(type) {
+        const colors = {
+            'firestorm': '#ff4500', // Ignis
+            'tsunami': '#00bfff',   // Marina
+            'shield': '#32cd32',    // Terra
+            'tornado': '#ffd700',   // Zephyr
+        };
+        return colors[type] || '#ffffff';
+    }
+
     drawCharacter(ctx, player) {
         const x = player.x;
         const y = player.y;
@@ -648,12 +693,24 @@ export default class GameEngine {
             loser = this.players[1];
         }
         
-        // Processar economia da partida
-        // Usa global window.gameStorage
-        const economyResult = window.gameStorage.processMatchEconomy(
-            11, // ID do jogador atual (mock)
-            this.players.length
-        );
+        // Processar economia da partida com segurança
+        let economyResult = { earnings: 0, newTotal: 0 };
+        try {
+            if (window.gameStorage && window.gameStorage.processMatchEconomy) {
+                // Usa global window.gameStorage
+                economyResult = window.gameStorage.processMatchEconomy(
+                    11, // ID do jogador atual (mock)
+                    this.players.length
+                );
+                console.log('Economia processada com sucesso:', economyResult);
+            } else {
+                console.warn('GameStorage não encontrado. Usando valores padrão.');
+            }
+        } catch (e) {
+            console.error('Erro ao processar economia no endGame:', e);
+            // Fallback para evitar travamento
+            economyResult = { earnings: 50, newTotal: 1000 };
+        }
         
         // Disparar evento de fim de jogo para Main tratar a UI
         window.dispatchEvent(new CustomEvent('game-over', { 
@@ -678,11 +735,15 @@ export default class GameEngine {
     
     start() {
         const gameLoop = () => {
-            if (!this.gameOver) {
-                this.update();
+            if (!this.isPaused) {
+                // Atualizar lógica apenas se não for fim de jogo
+                if (!this.gameOver) {
+                    this.update();
+                }
+                // Sempre desenhar (mesmo em Game Over, para evitar tela congelada)
                 this.draw();
-                requestAnimationFrame(gameLoop);
             }
+            requestAnimationFrame(gameLoop);
         };
         
         gameLoop();

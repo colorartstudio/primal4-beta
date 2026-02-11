@@ -14,6 +14,7 @@
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="ranking.css">
+    <link rel="stylesheet" href="results.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -363,63 +364,78 @@
         </div>
     </div>
 
-    <!-- Tela de Resultado -->
+    <!-- Tela de Resultado (Game Over) -->
     <div id="result-screen" class="screen hidden">
-        <div class="result-content">
-            <div id="victory-title" class="result-title">
-                <i class="fas fa-trophy"></i> Vitória!
-            </div>
-            <div id="defeat-title" class="result-title hidden">
-                <i class="fas fa-skull"></i> Derrota
-            </div>
-            
-            <div class="winner-announce">
-                <div id="winner-character" class="character-display ignis"></div>
-                <h3 id="winner-name">Ignis Venceu!</h3>
-            </div>
-            
-            <div class="economy-results">
-                <div class="result-item">
-                    <span class="result-label">Prêmio:</span>
-                    <span class="result-value positive" id="prize-amount">+180 moedas</span>
-                </div>
-                <div class="result-item">
-                    <span class="result-label">Custo da Partida:</span>
-                    <span class="result-value negative" id="match-cost">-100 moedas</span>
-                </div>
-                <div class="result-item">
-                    <span class="result-label">Saldo Final:</span>
-                    <span class="result-value total" id="net-gain">+80 moedas</span>
-                </div>
-                
-                <div class="ecosystem-breakdown">
-                    <h4>Contribuição para o Ecossistema (10%):</h4>
-                    <div class="breakdown-item">
-                        <span>Ecossistema do Jogo:</span>
-                        <span id="eco-game">+1 moeda</span>
+        <div class="result-container glass-panel">
+            <!-- Cabeçalho Vibrante -->
+            <header class="result-header">
+                <h1 id="victory-title" class="hidden glow-text success">VITÓRIA!</h1>
+                <h1 id="defeat-title" class="hidden glow-text danger">DERROTA</h1>
+                <div class="winner-display">
+                    <div class="winner-avatar-ring">
+                        <span id="winner-character" class="winner-emoji">🏆</span>
                     </div>
-                    <div class="breakdown-item">
-                        <span>Doação para ONG:</span>
-                        <span id="eco-donation">+1 moeda</span>
+                    <h2 id="winner-name" class="winner-name">Jogador 1</h2>
+                </div>
+            </header>
+
+            <!-- Conteúdo Principal: Grid de Cards -->
+            <div class="result-content-grid">
+                <!-- Card 1: Resultado Pessoal (Lucro) -->
+                <div class="result-card personal-stats">
+                    <h3>Seu Desempenho</h3>
+                    <div class="stat-row">
+                        <span>Prêmio</span>
+                        <span id="prize-amount" class="stat-value success">+0</span>
                     </div>
-                    <div class="breakdown-item">
-                        <span>Desenvolvedores:</span>
-                        <span id="eco-devs">+2 moedas</span>
+                    <div class="stat-row">
+                        <span>Custo da Arena</span>
+                        <span id="match-cost" class="stat-value danger">-100</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="stat-row highlight">
+                        <span>Saldo Final</span>
+                        <span id="net-gain" class="stat-value highlight-text">+0</span>
                     </div>
                 </div>
+
+                <!-- Card 2: Contribuição ao Ecossistema -->
+                <div class="result-card eco-stats">
+                    <h3>Ecossistema (10%)</h3>
+                    <div class="eco-grid">
+                        <div class="eco-item">
+                            <span class="eco-icon">🌍</span>
+                            <span class="eco-label">Jogo</span>
+                            <span id="eco-game" class="eco-value">+0</span>
+                        </div>
+                        <div class="eco-item">
+                            <span class="eco-icon">🤝</span>
+                            <span class="eco-label">ONG</span>
+                            <span id="eco-donation" class="eco-value">+0</span>
+                        </div>
+                        <div class="eco-item">
+                            <span class="eco-icon">🛠️</span>
+                            <span class="eco-label">Devs</span>
+                            <span id="eco-devs" class="eco-value">+0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="result-actions">
-                <button id="btn-rematch" class="menu-btn">
-                    <i class="fas fa-redo"></i> Revanche
+
+            <!-- Rodapé: Ações -->
+            <footer class="result-actions">
+                <button id="btn-rematch" class="action-btn primary pulse">
+                    <span class="btn-icon">🔄</span> Revanche
                 </button>
-                <button id="btn-character-select" class="menu-btn">
-                    <i class="fas fa-user"></i> Novo Personagem
-                </button>
-                <button id="btn-back-to-menu-result" class="menu-btn secondary">
-                    <i class="fas fa-home"></i> Menu Principal
-                </button>
-            </div>
+                <div class="secondary-actions">
+                    <button id="btn-character-select" class="action-btn secondary">
+                        <span class="btn-icon">👤</span> Novo Personagem
+                    </button>
+                    <button id="btn-back-to-menu-result" class="action-btn secondary">
+                        <span class="btn-icon">🏠</span> Menu
+                    </button>
+                </div>
+            </footer>
         </div>
     </div>
 

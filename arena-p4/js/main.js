@@ -74,6 +74,9 @@ function switchScreen(screenName) {
     
     if(screens[screenName]) {
         screens[screenName].classList.remove('hidden');
+        // GARANTIA DE VISIBILIDADE (Essencial para o app não sumir)
+        screens[screenName].style.display = ''; 
+        screens[screenName].style.opacity = '';
         currentScreen = screenName;
     }
     
@@ -375,39 +378,88 @@ function initializeCharacterPreviews() {
 }
 
 function showResultScreen(winner, loser, economyResult) {
-    const isPlayerWinner = winner.name === 'Jogador 1' || (winner.name === 'CPU' && gameMode === 'versus' ? false : true);
+    // Determinar se Jogador 1 ganhou
+    const isPlayerWinner = winner.name === 'Jogador 1';
     
+    // Elementos DOM
+    const victoryTitle = document.getElementById('victory-title');
+    const defeatTitle = document.getElementById('defeat-title');
+    const winnerDisplay = document.getElementById('winner-character');
+    const winnerName = document.getElementById('winner-name');
+    const winnerRing = document.querySelector('.winner-avatar-ring');
+    
+    // Resetar estados
+    victoryTitle.classList.add('hidden');
+    defeatTitle.classList.add('hidden');
+    winnerRing.style.setProperty('--primary-purple', getCharacterColor(winner.element));
+    
+    // Título e Áudio
     if (isPlayerWinner) {
-        document.getElementById('victory-title').classList.remove('hidden');
-        document.getElementById('defeat-title').classList.add('hidden');
-        audioManager.play('start'); // Toca música de vitória
+        victoryTitle.classList.remove('hidden');
+        audioManager.play('start'); // Som de vitória
     } else {
-        document.getElementById('victory-title').classList.add('hidden');
-        document.getElementById('defeat-title').classList.remove('hidden');
-        audioManager.play('hit'); // Som triste
+        defeatTitle.classList.remove('hidden');
+        audioManager.play('hit'); // Som de derrota
     }
     
-    const winnerDisplay = document.getElementById('winner-character');
-    winnerDisplay.className = `character-display ${winner.element}`;
-    
+    // Avatar do Vencedor (Emoji ou Imagem)
     const emojis = { ignis: '🔥', marina: '💧', terra: '🌿', zephyr: '💨' };
-    winnerDisplay.innerHTML = emojis[winner.element] || '❓';
+    winnerDisplay.innerHTML = emojis[winner.element] || '🏆';
+    winnerDisplay.className = `winner-emoji ${winner.element}`;
     
-    document.getElementById('winner-name').textContent = `${winner.name} Venceu!`;
+    // Nome do Vencedor
+    winnerName.textContent = winner.name;
+    winnerName.style.color = getCharacterColor(winner.element);
     
-    document.getElementById('prize-amount').textContent = `+${economyResult.prize} moedas`;
-    document.getElementById('match-cost').textContent = '-100 moedas';
+    // --- Estatísticas Pessoais ---
+    const prizeEl = document.getElementById('prize-amount');
+    const costEl = document.getElementById('match-cost');
+    const netEl = document.getElementById('net-gain');
+    
+    // Animar Números (Count Up)
+    animateValue(prizeEl, 0, economyResult.prize, 1000, '+');
+    costEl.textContent = '-100'; // Fixo
     
     const netGain = economyResult.prize - 100;
-    document.getElementById('net-gain').textContent = `${netGain >= 0 ? '+' : ''}${netGain} moedas`;
+    animateValue(netEl, 0, netGain, 1500, netGain >= 0 ? '+' : '');
     
-    document.getElementById('eco-game').textContent = `+${economyResult.feeDistribution.gameEcosystem} moeda${economyResult.feeDistribution.gameEcosystem !== 1 ? 's' : ''}`;
-    document.getElementById('eco-donation').textContent = `+${economyResult.feeDistribution.donations} moeda${economyResult.feeDistribution.donations !== 1 ? 's' : ''}`;
-    document.getElementById('eco-devs').textContent = `+${economyResult.feeDistribution.developers} moeda${economyResult.feeDistribution.developers !== 1 ? 's' : ''}`;
+    // Cores Semânticas
+    netEl.className = `stat-value ${netGain >= 0 ? 'success' : 'danger'} highlight-text`;
+    
+    // --- Ecossistema ---
+    animateValue(document.getElementById('eco-game'), 0, economyResult.feeDistribution.gameEcosystem, 800, '+');
+    animateValue(document.getElementById('eco-donation'), 0, economyResult.feeDistribution.donations, 900, '+');
+    animateValue(document.getElementById('eco-devs'), 0, economyResult.feeDistribution.developers, 1000, '+');
     
     updateRankingDisplay();
     
     setTimeout(() => {
         switchScreen('result');
     }, 1000);
+}
+
+// Helper: Animar números
+function animateValue(element, start, end, duration, prefix = '') {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const current = Math.floor(progress * (end - start) + start);
+        element.textContent = `${prefix}${current}`;
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+// Helper: Cor do personagem
+function getCharacterColor(element) {
+    const colors = {
+        ignis: '#ff4500',
+        marina: '#00bfff',
+        terra: '#32cd32',
+        zephyr: '#ffd700'
+    };
+    return colors[element] || '#ffffff';
 }

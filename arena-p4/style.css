@@ -774,12 +774,28 @@ body {
 }
 
 /* --- Responsive --- */
+@media (max-width: 900px) and (min-width: 601px) {
+    /* Tablet Optimization: Grid 2x2 Simétrico */
+    .character-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        width: 80%;
+        margin: 2rem auto;
+        justify-items: center;
+    }
+    
+    .character-card {
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .game-logo-horizontal { width: 70%; }
+}
+
 @media (max-width: 768px) {
     .game-logo-horizontal { width: 85%; }
     .menu-options { max-width: 90%; }
-    
-    /* Tablet: Grid mais espaçado ou lista */
-    .character-grid { gap: 15px; }
 }
 
 @media (max-width: 600px) {
@@ -915,6 +931,56 @@ body {
     /* Refinamento extra para telas minúsculas */
     .character-card h3 { font-size: 1rem; }
     .character-preview { width: 40px; height: 40px; font-size: 1.5rem; }
+}
+
+/* --- Landscape Mode Mobile --- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .game-logo-horizontal {
+        max-height: 15vh; /* Drástica redução para caber */
+        margin-bottom: 0.5rem;
+    }
+
+    .menu-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .title-content {
+        justify-content: flex-start;
+        padding-top: 10px;
+    }
+
+    .game-subtitle {
+        display: none; /* Ocultar para economizar espaço */
+    }
+    
+    /* Modais em Landscape */
+    .invite-card, .tutorial-card {
+        padding: 1rem;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .tutorial-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+}
+
+/* --- Modais Universais (Overflow Fix) --- */
+.invite-card, .tutorial-card {
+    max-height: 85vh;
+    overflow-y: auto;
+    /* Custom Scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-purple) rgba(0,0,0,0.3);
+}
+
+.invite-card::-webkit-scrollbar, .tutorial-card::-webkit-scrollbar {
+    width: 6px;
+}
+.invite-card::-webkit-scrollbar-thumb, .tutorial-card::-webkit-scrollbar-thumb {
+    background-color: var(--primary-purple);
+    border-radius: 3px;
 }
 
 /* --- UTILITIES - CRITICAL --- */

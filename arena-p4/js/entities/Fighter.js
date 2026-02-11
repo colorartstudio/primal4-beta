@@ -10,7 +10,8 @@ export default class Fighter {
         this.isCPU = isCPU;
         
         // Atributos
-        this.health = 300; // Tankier Gameplay (3x mais vida)
+        this.maxHealth = 900; // Tankier Gameplay (3x mais vida: 300 -> 900)
+        this.health = this.maxHealth;
         this.velocityX = 0;
         this.velocityY = 0;
         this.isGrounded = false;
