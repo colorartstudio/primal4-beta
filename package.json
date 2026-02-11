@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "http-server arena-p4 -o -c-1",
-    "deploy": "vercel deploy"
+    "deploy": "cd arena-p4 && vercel deploy --prod"
   },
   "keywords": [],
   "author": "",
