@@ -1,6 +1,7 @@
 import Fighter from '../entities/Fighter.js';
 import InputManager from './InputManager.js';
 import EffectsManager from './EffectsManager.js';
+import PowerShow, { POWER_CASTS } from '../vfx/PowerFrames.js';
 import { CONSTANTS, CHARACTERS } from '../utils/Constants.js';
 
 export default class GameEngine {
@@ -25,6 +26,8 @@ export default class GameEngine {
         // Managers
         this.inputManager = new InputManager();
         this.effectsManager = new EffectsManager(canvas, ctx);
+        this.powerShow = new PowerShow();
+        this.shake = 0;
         
         // Pote da partida
         this.potAmount = 200;
@@ -90,9 +93,9 @@ export default class GameEngine {
         
         // 3 Suspensões em Degrau (Stepped Suspensions) - Relativas ao tamanho da tela
         const steps = [
-            { xPct: 0.1, yOffset: 120, width: 200, color: '#8a2be2' }, // Esquerda (Baixo)
-            { xPct: 0.4, yOffset: 220, width: 200, color: '#39ff14' }, // Centro (Médio)
-            { xPct: 0.7, yOffset: 320, width: 200, color: '#00bfff' }  // Direita (Alto)
+            { xPct: 0.1, yOffset: 180, width: 200, color: '#8a2be2' },
+            { xPct: 0.4, yOffset: 270, width: 200, color: '#39ff14' },
+            { xPct: 0.7, yOffset: 360, width: 200, color: '#00bfff' }
         ];
 
         steps.forEach(step => {
@@ -118,6 +121,7 @@ export default class GameEngine {
             'Jogador 1',
             1
         );
+        player1.y = groundY - player1.height;
         this.inputManager.subscribe(player1);
         
         let player2;
@@ -146,6 +150,7 @@ export default class GameEngine {
                 'Jogador 2',
                 2
             );
+            player2.y = groundY - player2.height;
             this.inputManager.subscribe(player2);
         }
         
@@ -182,6 +187,15 @@ export default class GameEngine {
             const healthBar = document.getElementById(`health-player${index + 1}`);
             if (healthBar) {
                 healthBar.style.width = `${healthPercent}%`;
+            }
+
+            const specialBar = document.getElementById(`special-player${index + 1}`);
+            if (specialBar) {
+                const spec = POWER_CASTS[player.element];
+                const maxCd = spec ? spec.cooldown : 180;
+                const ratio = player.specialCooldown <= 0 ? 1 : 1 - player.specialCooldown / maxCd;
+                specialBar.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
+                specialBar.classList.toggle('ready', player.specialCooldown <= 0 && !player.cast);
             }
             
             // Atualizar nome do personagem no HUD
@@ -236,6 +250,9 @@ export default class GameEngine {
             
             // Aplicar fricção
             player.velocityX *= this.friction;
+
+            // Dash e plant do especial, depois da fricção
+            this.powerShow.applyMotion(player);
             
             // Atualizar posição
             player.x += player.velocityX;
@@ -291,6 +308,16 @@ export default class GameEngine {
                 this.checkPlayerCollision(this.players[0], this.players[1]);
             }
         });
+
+        this.players.forEach((player) => {
+            if (player.cast && player.cast.frame === 0) {
+                this.powerShow.onCast(player);
+                this.shake = Math.max(this.shake, 4);
+            }
+        });
+        const powerHits = this.powerShow.resolve(this.players);
+        powerHits.forEach((hit) => this.applyPowerHit(hit.attacker, hit.defender, hit.spec));
+        if (this.shake > 0) this.shake *= 0.86;
         
         this.updateHUD();
     }
@@ -407,65 +434,58 @@ export default class GameEngine {
     }
 
     processAttack(attacker, defender, centerX, centerY) {
-        // Evitar hitkill (frame rate)
-        if (defender.invulnerable > 0) return;
+        if (defender.hitLock > 0) return;
 
-        let damage = attacker.attackDamage;
-        let knockback = attacker.knockbackPower;
-        let effectType = 'hit';
+        const damage = attacker.attackDamage;
+        const shielded = defender.activePower && defender.activePower.type === 'shield';
+        const knockback = shielded ? attacker.knockbackPower * 0.5 : attacker.knockbackPower;
+        const effectType = {
+            [CHARACTERS.IGNIS]: 'fire',
+            [CHARACTERS.MARINA]: 'water',
+            [CHARACTERS.TERRA]: 'earth',
+            [CHARACTERS.ZEPHYR]: 'air'
+        }[attacker.element] || 'hit';
 
-        // Bônus e Efeitos Elementais
-        switch (attacker.element) {
-            case CHARACTERS.IGNIS:
-                effectType = 'fire';
-                if (attacker.activePower) {
-                    damage *= 1.5; // Firestorm buff
-                    this.effectsManager.createEffect('fire', defender.x, defender.y, 60);
-                }
-                break;
-            case CHARACTERS.MARINA:
-                effectType = 'water';
-                if (attacker.activePower) {
-                    knockback *= 2; // Tsunami push
-                    defender.speedMultiplier = 0.5; // Slow temporário
-                    setTimeout(() => defender.speedMultiplier = 1, 1000);
-                }
-                break;
-            case CHARACTERS.TERRA:
-                effectType = 'earth';
-                break;
-            case CHARACTERS.ZEPHYR:
-                effectType = 'air';
-                break;
-        }
+        const dealt = this.landHit(attacker, defender, damage, knockback, effectType, shielded ? -2 : -5);
+        const basicLabel = shielded ? `BLOQUEIO -${Math.floor(dealt)}` : `-${Math.floor(dealt)}`;
+        this.showFloatText(basicLabel, defender.x, defender.y - 22, shielded ? '#7dff9a' : '#ffb020');
+        defender.hitLock = 14;
+    }
 
-        // Aplicar Defesa (Terra Shield)
-        if (defender.activePower && defender.element === CHARACTERS.TERRA) {
-            console.log(`[COMBATE] Terra Shield Ativo! Dano Base: ${damage}`);
-            damage *= (1 - (defender.damageReduction || 0.75)); // Usa valor dinâmico ou fallback
-            console.log(`[COMBATE] Dano Reduzido (75%): ${damage.toFixed(2)}`);
-            
-            knockback = 0; // Imune a knockback
-            this.effectsManager.createEffect('earth', defender.x + defender.width/2, defender.y + defender.height/2, 50);
-            this.showFloatText('BLOCKED!', defender.x, defender.y - 20, '#32cd32');
-        } else {
-            defender.takeDamage(damage);
-            
-            // Aplicar Knockback
+    applyPowerHit(attacker, defender, spec) {
+        if (!defender || defender.hitLock > 0 || this.gameOver) return;
+        const shielded = defender.activePower && defender.activePower.type === 'shield';
+        const knockback = shielded ? spec.knockback * 0.5 : spec.knockback;
+        const effectType = {
+            ignis: 'fire',
+            marina: 'water',
+            terra: 'earth',
+            zephyr: 'air'
+        }[attacker.element] || 'hit';
+
+        const dealt = this.landHit(attacker, defender, spec.damage, knockback, effectType, spec.lift || -6);
+        if (spec.slowFrames) defender.slowFrames = shielded ? Math.ceil(spec.slowFrames * 0.6) : spec.slowFrames;
+        defender.hitLock = spec.hitLock || 16;
+        this.shake = Math.max(this.shake, spec.shake || 6);
+        this.effectsManager.createEffect(effectType, defender.x + defender.width / 2, defender.y + defender.height / 2, 70);
+        const label = shielded ? 'BLOQUEIO' : `${spec.name} -${Math.floor(dealt)}`;
+        this.showFloatText(label, defender.x, defender.y - 36, spec.color || '#fff');
+    }
+
+    landHit(attacker, defender, damage, knockback, effectType, lift) {
+        const before = defender.health;
+        defender.takeDamage(damage);
+        const dealt = before - defender.health;
+        if (knockback !== 0) {
             const dirX = defender.x - attacker.x;
-            defender.velocityX += (dirX > 0 ? 1 : -1) * knockback;
-            defender.velocityY = -5; // Jogar um pouco para cima
-            
-            // Feedback Visual e Sonoro
-            this.effectsManager.createEffect(effectType, centerX, centerY, 40);
-            this.showFloatText(`-${Math.floor(damage)}`, defender.x, defender.y - 20, '#ff4500');
-            this.audioManager.play('hit');
+            const dir = dirX === 0 ? (attacker.cast ? attacker.cast.facing : 1) : (dirX > 0 ? 1 : -1);
+            defender.velocityX += dir * knockback;
+            defender.velocityY = lift;
         }
-
-        // Verificar Morte
-        if (defender.health <= 0) {
-            this.endGame();
-        }
+        this.effectsManager.createEffect(effectType, defender.x + defender.width / 2, defender.y + defender.height / 2, 40);
+        if (this.audioManager && this.audioManager.play) this.audioManager.play('hit');
+        if (defender.health <= 0) this.endGame();
+        return dealt;
     }
     
     showFloatText(text, x, y, color) {
@@ -482,6 +502,10 @@ export default class GameEngine {
         
         // Limpar canvas
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.save();
+        if (this.shake > 0.4) {
+            ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
+        }
         
         // Desenhar fundo (Cyberpunk Gradient)
         const gradient = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
@@ -562,10 +586,13 @@ export default class GameEngine {
                 ctx.restore();
             }
 
+            this.powerShow.drawBehind(ctx, player);
             this.drawCharacter(ctx, player);
+            this.powerShow.drawFront(ctx, player);
+            this.powerShow.drawMeter(ctx, player);
             
             // Desenhar barra de vida acima do personagem
-            const barWidth = 50;
+            const barWidth = player.width;
             const barHeight = 6;
             const barX = player.x + player.width / 2 - barWidth / 2;
             const barY = player.y - 15;
@@ -600,8 +627,12 @@ export default class GameEngine {
             }
         });
 
+        this.powerShow.drawWaves(ctx);
+        this.powerShow.drawCallout(ctx, this.canvas.width);
+
         // Desenhar efeitos (ACIMA de tudo para visibilidade)
         this.effectsManager.draw();
+        ctx.restore();
     }
     
     getEffectColor(type) {
@@ -614,41 +645,60 @@ export default class GameEngine {
         return colors[type] || '#ffffff';
     }
 
+    walkPose(player) {
+        const stepping = player.isGrounded && Math.abs(player.velocityX) > 0.8 && !player.cast;
+        if (!stepping) {
+            if (!player.isGrounded) {
+                const tilt = Math.max(-0.16, Math.min(0.16, -player.velocityY * 0.012));
+                return { rot: tilt, sx: 1, sy: player.velocityY < 0 ? 1.05 : 0.95, step: -1 };
+            }
+            return { rot: 0, sx: 1, sy: 1, step: -1 };
+        }
+
+        // Quatro poses: apoio esquerdo, passagem, apoio direito, passagem.
+        const poses = [
+            { rot: -0.16, sx: 1.04, sy: 0.92 },
+            { rot: -0.03, sx: 0.97, sy: 1.08 },
+            { rot: 0.16, sx: 1.04, sy: 0.92 },
+            { rot: 0.03, sx: 0.97, sy: 1.08 }
+        ];
+        const pace = Math.abs(player.velocityX) > 8 ? 4 : 6;
+        const step = Math.floor(player.animTick / pace) % 4;
+        return { ...poses[step], step };
+    }
+
     drawCharacter(ctx, player) {
-        const x = player.x;
-        const y = player.y;
+        const pose = this.walkPose(player);
         const width = player.width;
         const height = player.height;
-        
-        // Tenta desenhar o SVG
-        if (this.sprites[player.element] && this.sprites[player.element].complete && this.sprites[player.element].naturalWidth > 0) {
-            // Salvar contexto
-            ctx.save();
-            
-            // Virar o personagem se necessário
-            if (!player.facingRight) {
-                ctx.translate(x + width, y);
-                ctx.scale(-1, 1);
-                ctx.drawImage(this.sprites[player.element], 0, 0, width, height);
-            } else {
-                ctx.drawImage(this.sprites[player.element], x, y, width, height);
-            }
-            
-            ctx.restore();
+        const feet = player.y + height;
+        const cx = player.x + width / 2;
+        const sprite = this.sprites[player.element];
+        const hasSprite = sprite && sprite.complete && sprite.naturalWidth > 0;
+
+        ctx.save();
+        ctx.translate(cx, feet);
+        ctx.scale(player.facingRight ? 1 : -1, 1);
+        ctx.rotate(pose.rot);
+        ctx.scale(pose.sx, pose.sy);
+
+        if (hasSprite) {
+            ctx.drawImage(sprite, -width / 2, -height, width, height);
         } else {
-            // Fallback: desenhar retângulo colorido
             ctx.fillStyle = this.getCharacterColor(player.element);
-            
-            // Corpo
-            ctx.fillRect(x, y, width, height);
-            
-            // Detalhes
+            ctx.fillRect(-width / 2, -height, width, height);
             ctx.fillStyle = 'white';
-            ctx.fillRect(x + width/4, y + height/4, width/2, height/4); // "Rosto"
-            
-            // Indicador de direção
-            ctx.fillStyle = player.facingRight ? 'blue' : 'red';
-            ctx.fillRect(player.facingRight ? x + width - 5 : x, y + height/2, 5, 10);
+            ctx.fillRect(-width / 4, -height + height / 4, width / 2, height / 4);
+        }
+        ctx.restore();
+
+        if (pose.step === 0 || pose.step === 2) {
+            ctx.save();
+            ctx.globalAlpha = 0.45;
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            const behind = player.facingRight ? player.x - 6 : player.x + width;
+            ctx.fillRect(behind, feet - 3, 10, 3);
+            ctx.restore();
         }
     }
     

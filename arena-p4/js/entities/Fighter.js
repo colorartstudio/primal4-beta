@@ -2,8 +2,9 @@ export default class Fighter {
     constructor(x, y, element, name, playerNumber, isCPU = false) {
         this.x = x;
         this.y = y;
-        this.width = 40;
-        this.height = 60;
+        this.width = 74;
+        this.height = 108;
+        this.animTick = 0;
         this.element = element;
         this.name = name;
         this.playerNumber = playerNumber;
@@ -23,11 +24,13 @@ export default class Fighter {
         this.isAttacking = false;
         this.attackCooldown = 0;
         this.specialCooldown = 0;
+        this.hitLock = 0;
+        this.slowFrames = 0;
+        this.cast = null;
         
         // Poderes Ativos
-        this.activePower = null; // { type, duration, ... }
+        this.activePower = null; // { type, duration }
         this.damageReduction = 0;
-        this.speedMultiplier = 1;
         
         // Controles
         this.controls = {
@@ -63,7 +66,7 @@ export default class Fighter {
                 this.baseSpeed = 4;
                 this.jumpForce = -10;
                 this.attackRange = 35;
-                this.attackDamage = 15; // Alto dano
+                this.attackDamage = 13; // Golpe pesado, abaixo do que o escudo antigo permitia
                 this.knockbackPower = 4;
                 break;
             case 'zephyr':
@@ -82,16 +85,24 @@ export default class Fighter {
         }
         this.speed = this.baseSpeed;
     }
+
+    moveScale() {
+        if (this.slowFrames > 0) return 0.5;
+        if (this.activePower && this.activePower.type === 'tornado') {
+            return 1.65;
+        }
+        return 1;
+    }
     
     handleInput(action, isPressed) {
         this.controls[action] = isPressed;
         
         if (isPressed) {
             if (action === 'left') {
-                this.velocityX = -this.speed * this.speedMultiplier;
+                this.velocityX = -this.speed * this.moveScale();
                 this.facingRight = false;
             } else if (action === 'right') {
-                this.velocityX = this.speed * this.speedMultiplier;
+                this.velocityX = this.speed * this.moveScale();
                 this.facingRight = true;
             } else if (action === 'up') {
                 this.jump();
@@ -133,45 +144,14 @@ export default class Fighter {
     }
     
     activatePower() {
-        this.isAttacking = true;
-        this.specialCooldown = 180; // 3 segundos de cooldown
-        
-        // Definir poder baseado no elemento
-        switch (this.element) {
-            case 'ignis':
-                this.activePower = {
-                    type: 'firestorm',
-                    duration: 180, // 3 segundos (Aumentado)
-                    range: 150,
-                    damagePerTick: 0.5
-                };
-                break;
-            case 'marina':
-                this.activePower = {
-                    type: 'tsunami',
-                    duration: 150, // 2.5 segundos (Aumentado)
-                    range: 200,
-                    slowEffect: 0.5
-                };
-                break;
-            case 'terra':
-                this.activePower = {
-                    type: 'shield',
-                    duration: 240, // 4 segundos (Aumentado)
-                    damageReduction: 0.75 // 75% Redução (Tank)
-                };
-                this.damageReduction = 0.75;
-                break;
-            case 'zephyr':
-                this.activePower = {
-                    type: 'tornado',
-                    duration: 120, // 2 segundos (Aumentado)
-                    speedBoost: 1.8 // Super Velocidade
-                };
-                this.speedMultiplier = 1.8;
-                this.velocityX = this.facingRight ? 20 : -20; // Dash inicial mais forte
-                break;
-        }
+        if (this.cast) return;
+        const cooldowns = { ignis: 180, marina: 180, terra: 320, zephyr: 160 };
+        this.specialCooldown = cooldowns[this.element] || 180;
+        this.cast = {
+            frame: 0,
+            facing: this.facingRight ? 1 : -1,
+            dashed: false
+        };
     }
     
     updatePower() {
@@ -180,10 +160,7 @@ export default class Fighter {
         this.activePower.duration--;
         
         if (this.activePower.duration <= 0) {
-            // Resetar efeitos ao terminar
-            if (this.activePower.type === 'terra') this.damageReduction = 0;
-            if (this.activePower.type === 'zephyr') this.speedMultiplier = 1;
-            
+            this.damageReduction = 0;
             this.activePower = null;
         }
     }
@@ -197,21 +174,31 @@ export default class Fighter {
         // Atualizar cooldowns
         if (this.attackCooldown > 0) this.attackCooldown--;
         if (this.specialCooldown > 0) this.specialCooldown--;
+        if (this.hitLock > 0) this.hitLock--;
+        if (this.slowFrames > 0) this.slowFrames--;
         
         // Resetar estado de ataque
         if (this.attackCooldown <= 10) this.isAttacking = false;
         
         // Atualizar poder ativo
         this.updatePower();
+
+        if (this.cast) {
+            this.facingRight = this.cast.facing > 0;
+        }
         
-        // Aplicar movimento baseado nos controles (com multiplicador de velocidade)
-        if (this.controls.left) {
-            this.velocityX = -this.speed * this.speedMultiplier;
+        const scale = this.moveScale();
+        if (this.controls.left && !this.cast) {
+            this.velocityX = -this.speed * scale;
             this.facingRight = false;
         }
-        if (this.controls.right) {
-            this.velocityX = this.speed * this.speedMultiplier;
+        if (this.controls.right && !this.cast) {
+            this.velocityX = this.speed * scale;
             this.facingRight = true;
         }
+
+        const stepping = this.isGrounded && Math.abs(this.velocityX) > 0.8 && !this.cast;
+        if (stepping) this.animTick += 1;
+        else this.animTick = 0;
     }
 }

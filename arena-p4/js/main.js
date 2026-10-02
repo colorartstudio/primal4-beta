@@ -102,7 +102,38 @@ function initializeEventListeners() {
     };
 
     document.getElementById('btn-login').addEventListener('click', handleLogin);
-    document.getElementById('btn-register').addEventListener('click', handleLogin); // Simulação por enquanto
+
+    const panelLogin = document.getElementById('panel-login');
+    const panelRegister = document.getElementById('panel-register');
+    const registerMsg = document.getElementById('register-msg');
+
+    document.getElementById('btn-show-register').addEventListener('click', () => {
+        audioManager.play('select');
+        registerMsg.textContent = '';
+        panelLogin.classList.add('hidden');
+        panelRegister.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-show-login').addEventListener('click', () => {
+        audioManager.play('select');
+        panelRegister.classList.add('hidden');
+        panelLogin.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-register').addEventListener('click', () => {
+        const name = document.getElementById('register-user').value.trim();
+        const pass = document.getElementById('register-pass').value;
+        const pass2 = document.getElementById('register-pass2').value;
+        if (!name || !pass) {
+            registerMsg.textContent = 'Preencha nome e senha para criar a conta.';
+            return;
+        }
+        if (pass !== pass2) {
+            registerMsg.textContent = 'As senhas não conferem.';
+            return;
+        }
+        handleLogin();
+    });
 
     // Menu Principal
     document.getElementById('btn-solo').addEventListener('click', () => {
