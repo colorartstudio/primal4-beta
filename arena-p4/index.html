@@ -10,6 +10,11 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/Logo_Primal_4_Principal.svg">
+
+    <!-- Fonts do Portal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
     
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
@@ -29,61 +34,175 @@
         </div>
     </div>
 
-    <!-- Tela de Intro / Login (NOVA) -->
+    <!-- Tela de Intro / Login (Portal de Pedra) -->
     <div id="intro-screen" class="screen">
         <canvas id="fireworks-canvas"></canvas>
-        <div class="intro-content">
-            <div class="logo-container-principal">
-                <img src="assets/Logo_Primal_4_Principal.svg" alt="Primal 4 Logo Principal" class="logo-principal-anim">
+
+        <div class="intro-content primal-portal">
+            <!-- Arco + Logo dentro do circulo runico -->
+            <div class="portal-top">
+                <div class="portal-seal float-slow">
+                    <!-- Pedra-chave conectada ao anel -->
+                    <div class="portal-keystone stone-groove">
+                        <i class="fas fa-water glow-cyan"></i>
+                    </div>
+
+                    <!-- Anel de pedra com hieroglifos -->
+                    <div class="portal-rune-ring" aria-hidden="true">
+                        <div class="rune-ring-stone"></div>
+                        <div class="rune-ring-inner"></div>
+                        <div class="rune-glyphs font-rune">
+                            <span class="rg rg-1 glow-orange">ᚠ</span>
+                            <span class="rg rg-2 glow-orange">ᚱ</span>
+                            <span class="rg rg-3 glow-orange">ᚦ</span>
+                            <span class="rg rg-4 glow-orange">ᛗ</span>
+                            <span class="rg rg-5 glow-orange">ᚢ</span>
+                            <span class="rg rg-6 glow-orange">ᚲ</span>
+                            <span class="rg rg-7 glow-cyan">ᚹ</span>
+                            <span class="rg rg-8 glow-cyan">ᚺ</span>
+                            <span class="rg rg-9 glow-cyan">ᚾ</span>
+                            <span class="rg rg-10 glow-cyan">ᛁ</span>
+                            <span class="rg rg-11 glow-cyan">ᛃ</span>
+                            <span class="rg rg-12 glow-cyan">ᛉ</span>
+                            <span class="rg rg-13 glow-orange">ᛋ</span>
+                            <span class="rg rg-14 glow-orange">ᛏ</span>
+                            <span class="rg rg-15 glow-cyan">ᛒ</span>
+                            <span class="rg rg-16 glow-cyan">ᛖ</span>
+                        </div>
+                    </div>
+
+                    <!-- Logo a frente, no centro do circulo -->
+                    <div class="portal-logo-disc">
+                        <img
+                            src="assets/Logo_Primal_4_Principal.svg"
+                            alt="PRIMAL - Logo Principal"
+                            class="portal-logo"
+                            draggable="false"
+                        >
+                    </div>
+
+                    <div class="portal-logo-brace">
+                        <span class="font-rune glow-cyan">ᛞ</span>
+                    </div>
+                </div>
             </div>
-            
-            <div class="login-card">
-                <div id="panel-login" class="auth-panel">
-                    <h2>Entrar na Arena</h2>
-                    <p class="auth-lead">Acesse com o nome do seu guerreiro.</p>
-                    <div class="input-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" placeholder="Nome do Guerreiro" id="login-user" autocomplete="username">
+
+            <!-- Pilares + altar do formulário -->
+            <div class="portal-body">
+                <aside class="stone-pillar portal-pillar portal-pillar-left">
+                    <div class="pillar-emblem glow-cyan"><i class="fas fa-droplet"></i></div>
+                    <div class="pillar-runes font-rune glow-cyan">
+                        <span>ᚱ</span><span>ᚠ</span><span>ᚹ</span><span>ᛖ</span><span>ᛚ</span>
                     </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" placeholder="Senha Secreta" id="login-pass" autocomplete="current-password">
+                    <div class="pillar-emblem glow-cyan"><i class="fas fa-tornado"></i></div>
+                </aside>
+
+                <div class="stone-slab portal-altar">
+                    <div class="portal-altar-groove"></div>
+
+                    <div id="panel-login" class="auth-panel">
+                        <div class="portal-titles">
+                            <h2>Entrar na Arena</h2>
+                            <p class="auth-lead">Acesse com o nome do seu guerreiro.</p>
+                        </div>
+
+                        <div class="portal-field">
+                            <div class="portal-totem totem-fire"><i class="fas fa-skull"></i></div>
+                            <div class="elemental-input">
+                                <i class="fas fa-user"></i>
+                                <input type="text" placeholder="Nome do Guerreiro" id="login-user" autocomplete="username">
+                            </div>
+                            <div class="portal-crystal"><i class="fas fa-gem"></i></div>
+                        </div>
+
+                        <div class="portal-field">
+                            <div class="portal-totem totem-shield"><i class="fas fa-shield-halved"></i></div>
+                            <div class="elemental-input">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" placeholder="Senha Secreta" id="login-pass" autocomplete="current-password">
+                            </div>
+                            <div class="portal-crystal"><i class="fas fa-cubes-stacked"></i></div>
+                        </div>
+
+                        <div class="riveted-frame">
+                            <span class="rivet"></span><span class="rivet"></span>
+                            <span class="rivet"></span><span class="rivet"></span>
+                            <button id="btn-login" class="btn-arena-purple glow-effect" type="button">
+                                <i class="fas fa-right-to-bracket"></i>
+                                <span>ACESSAR ARENA</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="login-actions">
-                        <button id="btn-login" class="menu-btn primary glow-effect" type="button">
-                            <i class="fas fa-sign-in-alt"></i> Acessar Arena
-                        </button>
-                        <button id="btn-show-register" class="menu-btn secondary" type="button">
-                            <i class="fas fa-user-plus"></i> Criar Conta
-                        </button>
+
+                    <div id="panel-register" class="auth-panel hidden">
+                        <div class="portal-titles">
+                            <h2>Forjar Guerreiro</h2>
+                            <p class="auth-lead">Escolha um nome e uma senha para a arena.</p>
+                        </div>
+
+                        <div class="portal-field">
+                            <div class="portal-totem totem-fire"><i class="fas fa-skull"></i></div>
+                            <div class="elemental-input">
+                                <i class="fas fa-user"></i>
+                                <input type="text" placeholder="Nome do Guerreiro" id="register-user" autocomplete="username">
+                            </div>
+                            <div class="portal-crystal"><i class="fas fa-gem"></i></div>
+                        </div>
+
+                        <div class="portal-field">
+                            <div class="portal-totem totem-shield"><i class="fas fa-shield-halved"></i></div>
+                            <div class="elemental-input">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" placeholder="Senha" id="register-pass" autocomplete="new-password">
+                            </div>
+                            <div class="portal-crystal"><i class="fas fa-cubes-stacked"></i></div>
+                        </div>
+
+                        <div class="portal-field">
+                            <div class="portal-totem totem-key"><i class="fas fa-key"></i></div>
+                            <div class="elemental-input">
+                                <i class="fas fa-circle-check"></i>
+                                <input type="password" placeholder="Confirmar senha" id="register-pass2" autocomplete="new-password">
+                            </div>
+                            <div class="portal-crystal"><i class="fas fa-gem"></i></div>
+                        </div>
+
+                        <p id="register-msg" class="auth-msg"></p>
+
+                        <div class="riveted-frame">
+                            <span class="rivet"></span><span class="rivet"></span>
+                            <span class="rivet"></span><span class="rivet"></span>
+                            <button id="btn-register" class="btn-arena-purple glow-effect" type="button">
+                                <i class="fas fa-user-plus"></i>
+                                <span>CRIAR E ENTRAR</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div id="panel-register" class="auth-panel hidden">
-                    <h2>Criar Conta</h2>
-                    <p class="auth-lead">Escolha um nome e uma senha para a arena.</p>
-                    <div class="input-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" placeholder="Nome do Guerreiro" id="register-user" autocomplete="username">
+                <aside class="stone-pillar portal-pillar portal-pillar-right">
+                    <div class="pillar-emblem glow-orange"><i class="fas fa-fire"></i></div>
+                    <div class="pillar-runes font-rune glow-cyan">
+                        <span>ᛁ</span><span>ᛋ</span><span>ᛚ</span><span>ᛏ</span><span>ᛒ</span>
                     </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" placeholder="Senha" id="register-pass" autocomplete="new-password">
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" placeholder="Confirmar senha" id="register-pass2" autocomplete="new-password">
-                    </div>
-                    <p id="register-msg" class="auth-msg"></p>
-                    <div class="login-actions">
-                        <button id="btn-register" class="menu-btn primary glow-effect" type="button">
-                            <i class="fas fa-user-plus"></i> Criar e Entrar
-                        </button>
-                        <button id="btn-show-login" class="auth-switch" type="button">
-                            Já tenho conta
-                        </button>
-                    </div>
+                    <div class="pillar-emblem glow-orange"><i class="fas fa-fire-burner"></i></div>
+                </aside>
+            </div>
+
+            <!-- Degraus + alternância login/cadastro -->
+            <div class="portal-steps">
+                <div class="stone-step-1">
+                    <button id="btn-show-register" class="portal-step-btn" type="button">
+                        <i class="fas fa-user-plus"></i>
+                        <span>CRIAR CONTA</span>
+                    </button>
+                    <button id="btn-show-login" class="portal-step-btn hidden" type="button">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>JÁ TENHO CONTA</span>
+                    </button>
                 </div>
+                <div class="stone-step-2"></div>
+                <div class="stone-step-3"></div>
             </div>
         </div>
     </div>

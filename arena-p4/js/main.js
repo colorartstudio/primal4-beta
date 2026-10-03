@@ -106,18 +106,24 @@ function initializeEventListeners() {
     const panelLogin = document.getElementById('panel-login');
     const panelRegister = document.getElementById('panel-register');
     const registerMsg = document.getElementById('register-msg');
+    const btnShowRegister = document.getElementById('btn-show-register');
+    const btnShowLogin = document.getElementById('btn-show-login');
 
     document.getElementById('btn-show-register').addEventListener('click', () => {
         audioManager.play('select');
         registerMsg.textContent = '';
         panelLogin.classList.add('hidden');
         panelRegister.classList.remove('hidden');
+        btnShowRegister.classList.add('hidden');
+        btnShowLogin.classList.remove('hidden');
     });
 
     document.getElementById('btn-show-login').addEventListener('click', () => {
         audioManager.play('select');
         panelRegister.classList.add('hidden');
         panelLogin.classList.remove('hidden');
+        btnShowLogin.classList.add('hidden');
+        btnShowRegister.classList.remove('hidden');
     });
 
     document.getElementById('btn-register').addEventListener('click', () => {

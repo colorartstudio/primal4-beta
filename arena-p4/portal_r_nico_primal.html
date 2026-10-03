@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRIMAL - Portal da Arena</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Fredoka:wght@500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --rune-cyan: #38bdf8;
+      --rune-amber: #f97316;
+      --rune-purple: #9333ea;
+      --stone-base: #474f5e;
+      --stone-dark: #2a313d;
+      --stone-highlight: #707b90;
+    }
+
+    body {
+      font-family: 'Fredoka', 'Inter', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    .font-rune {
+      font-family: 'Cinzel', serif;
+    }
+
+    /* Glows e Pulsares Rúnicos */
+    @keyframes runeGlowCyan {
+      0%, 100% { filter: drop-shadow(0 0 4px #0ea5e9) drop-shadow(0 0 10px rgba(56,189,248,0.7)); text-shadow: 0 0 6px #38bdf8; }
+      50% { filter: drop-shadow(0 0 8px #38bdf8) drop-shadow(0 0 18px rgba(14,165,233,0.95)); text-shadow: 0 0 12px #7dd3fc; }
+    }
+
+    @keyframes runeGlowOrange {
+      0%, 100% { filter: drop-shadow(0 0 4px #ea580c) drop-shadow(0 0 10px rgba(249,115,22,0.7)); text-shadow: 0 0 6px #f97316; }
+      50% { filter: drop-shadow(0 0 8px #f97316) drop-shadow(0 0 18px rgba(234,88,12,0.95)); text-shadow: 0 0 12px #fdba74; }
+    }
+
+    @keyframes floatPortal {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-4px) rotate(0.4deg); }
+    }
+
+    @keyframes gentlePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    .glow-cyan {
+      animation: runeGlowCyan 2.8s ease-in-out infinite;
+    }
+
+    .glow-orange {
+      animation: runeGlowOrange 3.2s ease-in-out infinite;
+    }
+
+    .float-slow {
+      animation: floatPortal 6s ease-in-out infinite;
+    }
+
+    /* Textura de Pedra Entalhada */
+    .stone-slab {
+      background: radial-gradient(circle at 50% 30%, #515a6b 0%, #363d4a 60%, #20252e 100%);
+      box-shadow: 
+        inset 0 4px 6px rgba(255, 255, 255, 0.2),
+        inset 0 -6px 12px rgba(0, 0, 0, 0.8),
+        0 15px 35px rgba(0,0,0,0.7);
+      border: 4px solid #6b778d;
+    }
+
+    .stone-pillar {
+      background: linear-gradient(180deg, #606b7d 0%, #3e4655 45%, #2c3340 100%);
+      box-shadow: 
+        inset 2px 2px 5px rgba(255,255,255,0.25),
+        inset -3px -3px 6px rgba(0,0,0,0.6),
+        0 8px 20px rgba(0,0,0,0.5);
+    }
+
+    .stone-groove {
+      box-shadow: inset 2px 3px 6px rgba(0,0,0,0.85), inset -1px -1px 3px rgba(255,255,255,0.1);
+    }
+
+    /* Botão Púrpura de Metal & Cristal */
+    .btn-arena-purple {
+      background: linear-gradient(180deg, #a855f7 0%, #7e22ce 60%, #581c87 100%);
+      box-shadow: 
+        inset 0 2px 4px rgba(255, 255, 255, 0.4),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.7),
+        0 0 15px rgba(168, 85, 247, 0.5),
+        0 6px 12px rgba(0,0,0,0.6);
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-arena-purple:hover {
+      background: linear-gradient(180deg, #b76bfb 0%, #8b28de 60%, #642099 100%);
+      box-shadow: 
+        inset 0 2px 6px rgba(255, 255, 255, 0.6),
+        0 0 24px rgba(192, 132, 252, 0.85),
+        0 8px 16px rgba(0,0,0,0.7);
+      transform: translateY(-2px);
+    }
+
+    .btn-arena-purple:active {
+      transform: translateY(2px);
+      box-shadow: 
+        inset 0 3px 8px rgba(0,0,0,0.9),
+        0 2px 6px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Moldura de metal com parafusos/rebites */
+    .riveted-frame {
+      border: 4px solid #3c424f;
+      background: #252b36;
+      box-shadow: 
+        inset 0 3px 5px rgba(0,0,0,0.8),
+        0 4px 10px rgba(0,0,0,0.5),
+        0 0 0 2px #5f6b80;
+    }
+
+    /* Degraus inferiores */
+    .stone-step-1 {
+      background: linear-gradient(180deg, #515c6e 0%, #353d4c 100%);
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 6px 14px rgba(0,0,0,0.6);
+    }
+    .stone-step-2 {
+      background: linear-gradient(180deg, #434c5b 0%, #2b323f 100%);
+      box-shadow: inset 0 2px 3px rgba(255,255,255,0.15), 0 8px 18px rgba(0,0,0,0.7);
+    }
+
+    /* Custom input styling */
+    .elemental-input {
+      background: #1c222b;
+      box-shadow: inset 3px 3px 8px rgba(0,0,0,0.85), inset -1px -1px 2px rgba(255,255,255,0.06);
+      border: 2px solid #374151;
+      transition: all 0.25s ease;
+    }
+    .elemental-input:focus-within {
+      border-color: #38bdf8;
+      box-shadow: inset 2px 2px 6px rgba(0,0,0,0.9), 0 0 14px rgba(56, 189, 248, 0.45);
+    }
+
+    /* Efeito de transparência no body */
+    .bg-mode-solid {
+      background: radial-gradient(circle at 50% 40%, #161c28 0%, #090c12 80%, #030407 100%);
+    }
+    .bg-mode-transparent {
+      background: transparent !important;
+    }
+    .bg-mode-grid {
+      background: repeating-conic-gradient(#1e2430 0% 25%, #141822 0% 50%) 50% / 24px 24px;
+    }
+  </style>
+</head>
+<body id="mainBody" class="bg-mode-solid text-slate-100 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 select-none transition-colors duration-300">
+
+  <div class="fixed top-3 right-3 z-50 flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700 shadow-xl text-xs font-semibold">
+    <span class="text-slate-400"><i class="fa-solid fa-eye-dropper mr-1"></i> Fundo:</span>
+    <button id="btnBgSolid" onclick="setBackgroundMode('solid')" class="px-2 py-1 rounded bg-slate-700 text-cyan-300 hover:bg-slate-600 transition" title="Fundo de Jogo (Escuro)">Arena</button>
+    <button id="btnBgGrid" onclick="setBackgroundMode('grid')" class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition" title="Fundo Xadrez de Transparência">Xadrez</button>
+    <button id="btnBgAlpha" onclick="setBackgroundMode('transparent')" class="px-2 py-1 rounded bg-slate-800 text-emerald-400 hover:bg-slate-700 transition" title="100% Transparente">Transparente</button>
+    <div class="h-4 w-[1px] bg-slate-700 mx-1"></div>
+    <button id="btnSoundToggle" onclick="toggleSound()" class="px-2 py-1 rounded bg-slate-800 text-amber-400 hover:bg-slate-700 transition" title="Ligar/Desligar Som">
+      <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+    </button>
+  </div>
+
+  <div class="relative w-full max-w-[430px] my-auto flex flex-col items-center pt-2 pb-6">
+
+    <!-- ARCO SUPERIOR E PILARES EXTERNOS DECORATIVOS -->
+    <div class="relative w-full flex flex-col items-center">
+      
+      <!-- Top Keystone / Runa Superior do Arco -->
+      <div class="z-20 -mb-7 w-20 h-14 bg-gradient-to-b from-[#6b778d] to-[#3f4756] rounded-t-xl rounded-b-md border-t-2 border-x-2 border-[#8a98b0] flex flex-col items-center justify-center shadow-lg stone-groove">
+        <div class="text-cyan-400 text-xl font-bold font-rune glow-cyan">
+          <i class="fa-solid fa-water"></i>
+        </div>
+      </div>
+
+      <!-- PORTAL CIRCULAR: logo oficial PRIMAL -->
+      <div class="relative w-72 h-72 sm:w-80 sm:h-80 z-10 flex items-center justify-center float-slow">
+        <img
+          src="assets/Logo_Primal_4_Principal.svg"
+          alt="PRIMAL - Logo Principal"
+          class="w-full h-full object-contain drop-shadow-[0_0_28px_rgba(138,43,226,0.45)] drop-shadow-[0_10px_24px_rgba(0,0,0,0.75)] pointer-events-none select-none"
+          draggable="false"
+        >
+
+        <!-- Pedestal / Braçadeira que liga o portal ao corpo do templo -->
+        <div class="absolute -bottom-4 z-20 bg-[#475163] px-5 py-1.5 rounded-lg border-2 border-[#76849c] shadow-md flex items-center justify-center">
+          <span class="text-cyan-400 font-rune text-sm font-bold glow-cyan">ᛞ</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="relative w-full -mt-4 z-10 flex">
+      
+      <!-- PILAR ESQUERDO COM RUNAS VERTICAIS BRILHANTES -->
+      <div class="w-10 sm:w-12 stone-pillar rounded-l-2xl border-l-2 border-y-2 border-[#6c7990] flex flex-col items-center justify-between py-6 my-2 shadow-2xl relative z-10">
+        <!-- Runa Elemento Água superior -->
+        <div class="w-7 h-7 rounded-full bg-[#202733] border border-cyan-500/50 flex items-center justify-center text-cyan-400 text-xs glow-cyan">
+          <i class="fa-solid fa-droplet"></i>
+        </div>
+
+        <!-- Runas verticais cravadas -->
+        <div class="flex flex-col gap-3 font-rune text-cyan-400 font-black text-sm sm:text-base glow-cyan my-3">
+          <span>ᚱ</span>
+          <span>ᚠ</span>
+          <span>ᚹ</span>
+          <span>ᛖ</span>
+          <span>ᛚ</span>
+        </div>
+
+        <!-- Símbolo elemental inferior esquerdo -->
+        <div class="w-7 h-7 rounded-full bg-[#1b2330] border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-sm glow-cyan">
+          <i class="fa-solid fa-tornado"></i>
+        </div>
+      </div>
+
+      <!-- CORPO CENTRAL DE PEDRA: LÁPIDE / ALTAR PRINCIPAL -->
+      <div class="flex-1 stone-slab rounded-2xl p-4 sm:p-6 flex flex-col items-center relative z-20 border-t-2 border-[#8291aa]">
+        
+        <!-- Detalhe em relevo da tampa de pedra -->
+        <div class="w-24 h-1.5 bg-[#29303d] rounded-full mb-3 shadow-inner"></div>
+
+        <!-- TÍTULOS ESCULPIDOS -->
+        <div class="text-center mb-4">
+          <h2 id="cardTitle" class="text-2xl sm:text-[26px] font-black tracking-wide text-[#f3e5ca] drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]" style="font-family: 'Fredoka', sans-serif;">
+            Entrar na Arena
+          </h2>
+          <p id="cardSubtitle" class="text-xs sm:text-sm text-[#b0bec5] font-medium drop-shadow mt-0.5">
+            Acesse com o nome do seu guerreiro.
+          </p>
+        </div>
+
+        <!-- FORMULÁRIO INTERATIVO -->
+        <form id="arenaAuthForm" onsubmit="handleFormSubmit(event)" class="w-full flex flex-col gap-3.5">
+          
+          <!-- CAMPO: NOME DO GUERREIRO -->
+          <div class="relative flex items-center">
+            <!-- Totem/Gárgula de Fogo decorativo ao lado do input -->
+            <div class="absolute -left-2.5 z-10 w-9 h-9 rounded-full bg-[#271f23] border border-red-500/60 shadow-md flex items-center justify-center text-red-500 hover:scale-110 transition">
+              <i class="fa-solid fa-skull text-sm drop-shadow-[0_0_5px_#ef4444]"></i>
+            </div>
+
+            <!-- Input Box com bordas rúnicas e padding para o ícone -->
+            <div class="elemental-input w-full rounded-xl flex items-center pl-9 pr-3 py-2.5">
+              <i class="fa-solid fa-user text-slate-400 text-xs sm:text-sm mr-2.5"></i>
+              <input 
+                type="text" 
+                id="warriorName" 
+                required
+                autocomplete="username"
+                placeholder="Nome do Guerreiro" 
+                class="w-full bg-transparent border-none outline-none text-sm text-slate-100 placeholder-slate-400 font-medium"
+              >
+            </div>
+
+            <!-- Cristal azul decorativo à direita -->
+            <div class="absolute -right-2 z-10 text-cyan-400 text-sm filter drop-shadow-[0_0_6px_#38bdf8] pointer-events-none">
+              <i class="fa-solid fa-gem"></i>
+            </div>
+          </div>
+
+          <!-- CAMPO EXTRA: EMAIL (Apenas exibido no modo Criar Conta) -->
+          <div id="emailFieldContainer" class="hidden relative items-center">
+            <div class="absolute -left-2.5 z-10 w-9 h-9 rounded-full bg-[#18262f] border border-cyan-500/60 shadow-md flex items-center justify-center text-cyan-400">
+              <i class="fa-solid fa-scroll text-xs drop-shadow-[0_0_5px_#06b6d4]"></i>
+            </div>
+            <div class="elemental-input w-full rounded-xl flex items-center pl-9 pr-3 py-2.5">
+              <i class="fa-solid fa-envelope text-slate-400 text-xs sm:text-sm mr-2.5"></i>
+              <input 
+                type="email" 
+                id="warriorEmail" 
+                placeholder="Pergaminho de Contato (Email)" 
+                class="w-full bg-transparent border-none outline-none text-sm text-slate-100 placeholder-slate-400 font-medium"
+              >
+            </div>
+          </div>
+
+          <!-- CAMPO: SENHA SECRETA -->
+          <div class="relative flex items-center">
+            <!-- Cabeça de Golem / Rocha protetora à esquerda -->
+            <div class="absolute -left-2.5 z-10 w-9 h-9 rounded-full bg-[#202731] border border-slate-500 shadow-md flex items-center justify-center text-slate-300 hover:scale-110 transition">
+              <i class="fa-solid fa-shield text-xs text-amber-300"></i>
+            </div>
+
+            <!-- Input Box da Senha -->
+            <div class="elemental-input w-full rounded-xl flex items-center pl-9 pr-3 py-2.5">
+              <i class="fa-solid fa-lock text-slate-400 text-xs sm:text-sm mr-2.5"></i>
+              <input 
+                type="password" 
+                id="warriorPassword" 
+                required
+                autocomplete="current-password"
+                placeholder="Senha Secreta" 
+                class="w-full bg-transparent border-none outline-none text-sm text-slate-100 placeholder-slate-400 font-medium"
+              >
+              <!-- Alternar visualização da senha -->
+              <button 
+                type="button" 
+                onclick="togglePasswordVisibility()" 
+                class="text-slate-400 hover:text-cyan-400 transition text-xs p-1 focus:outline-none"
+                title="Mostrar/Ocultar Senha"
+              >
+                <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+              </button>
+            </div>
+
+            <!-- Cristais azuis duplos à direita -->
+            <div class="absolute -right-2.5 z-10 text-cyan-300 text-base filter drop-shadow-[0_0_8px_#38bdf8] pointer-events-none">
+              <i class="fa-solid fa-cubes-stacked"></i>
+            </div>
+          </div>
+
+          <!-- CAMPO EXTRA: CONFIRMAÇÃO DE SENHA (Apenas modo Criar Conta) -->
+          <div id="confirmPassContainer" class="hidden relative items-center">
+            <div class="absolute -left-2.5 z-10 w-9 h-9 rounded-full bg-[#2a2430] border border-purple-500/60 shadow-md flex items-center justify-center text-purple-300">
+              <i class="fa-solid fa-key text-xs"></i>
+            </div>
+            <div class="elemental-input w-full rounded-xl flex items-center pl-9 pr-3 py-2.5">
+              <i class="fa-solid fa-circle-check text-slate-400 text-xs sm:text-sm mr-2.5"></i>
+              <input 
+                type="password" 
+                id="warriorPasswordConfirm" 
+                placeholder="Confirmar Senha" 
+                class="w-full bg-transparent border-none outline-none text-sm text-slate-100 placeholder-slate-400 font-medium"
+              >
+            </div>
+          </div>
+
+          <!-- BOTÃO ÉPICO PRINCIPAL DE AÇÃO COM REBITES DE METAL E BRILHO PÚRPURA -->
+          <div class="mt-2 riveted-frame rounded-2xl p-1.5 relative">
+            <!-- Rebites decorativos de ferro nos 4 cantos -->
+            <span class="absolute top-1 left-2 w-1.5 h-1.5 rounded-full bg-slate-400 shadow-inner"></span>
+            <span class="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-slate-400 shadow-inner"></span>
+            <span class="absolute bottom-1 left-2 w-1.5 h-1.5 rounded-full bg-slate-400 shadow-inner"></span>
+            <span class="absolute bottom-1 right-2 w-1.5 h-1.5 rounded-full bg-slate-400 shadow-inner"></span>
+
+            <button 
+              type="submit" 
+              id="submitArenaBtn"
+              class="btn-arena-purple w-full py-3 px-4 rounded-xl text-white font-extrabold tracking-wider text-base sm:text-lg flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <i class="fa-solid fa-right-to-bracket text-base" id="submitIcon"></i>
+              <span id="submitLabel">ACESSAR ARENA</span>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- MENSAGEM / FEEDBACK DINÂMICO -->
+        <div id="statusMessage" class="hidden w-full mt-3 p-2.5 rounded-xl text-xs text-center font-bold transition-all"></div>
+
+      </div>
+
+      <!-- PILAR DIREITO COM RUNAS VERTICAIS BRILHANTES -->
+      <div class="w-10 sm:w-12 stone-pillar rounded-r-2xl border-r-2 border-y-2 border-[#6c7990] flex flex-col items-center justify-between py-6 my-2 shadow-2xl relative z-10">
+        <!-- Símbolo superior fogo -->
+        <div class="w-7 h-7 rounded-full bg-[#2d1b18] border border-amber-500/50 flex items-center justify-center text-amber-400 text-xs glow-orange">
+          <i class="fa-solid fa-fire"></i>
+        </div>
+
+        <!-- Runas verticais cravadas -->
+        <div class="flex flex-col gap-3 font-rune text-cyan-400 font-black text-sm sm:text-base glow-cyan my-3">
+          <span>ᛁ</span>
+          <span>ᛋ</span>
+          <span>ᛚ</span>
+          <span>ᛏ</span>
+          <span>ᛒ</span>
+        </div>
+
+        <!-- Chama elemental inferior direito -->
+        <div class="w-7 h-7 rounded-full bg-[#2e1915] border border-orange-500/50 flex items-center justify-center text-amber-500 text-sm glow-orange">
+          <i class="fa-solid fa-fire-burner"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="w-full flex flex-col items-center -mt-2 z-30">
+      
+      <!-- Degrau 1 com botão funcional esculpido na rocha -->
+      <div class="w-11/12 stone-step-1 py-2 px-4 rounded-xl border-t-2 border-[#76849b] shadow-xl flex items-center justify-center">
+        <button 
+          type="button" 
+          onclick="toggleAuthMode()" 
+          id="toggleModeBtn"
+          class="flex items-center justify-center gap-2 text-slate-300 hover:text-white font-bold text-sm tracking-wide transition transform hover:scale-105 active:scale-95 px-4 py-1.5 rounded-lg bg-black/20 border border-slate-600/40 shadow-inner"
+        >
+          <i class="fa-solid fa-user-plus text-purple-400" id="toggleModeIcon"></i>
+          <span id="toggleModeLabel">CRIAR CONTA</span>
+        </button>
+      </div>
+
+      <!-- Degrau 2 (Base de sustentação em pedra bruta) -->
+      <div class="w-10/12 h-4 stone-step-2 rounded-b-xl border-t border-[#4e5868] shadow-2xl mt-0.5"></div>
+      <!-- Degrau 3 (Sombra/base rasa) -->
+      <div class="w-8/12 h-2.5 bg-[#171a21] rounded-b-lg shadow-inner"></div>
+
+    </div>
+
+  </div>
+
+  <div id="modalPortal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="stone-slab max-w-sm w-full p-6 rounded-3xl border-4 border-cyan-500/80 shadow-[0_0_35px_rgba(56,189,248,0.5)] flex flex-col items-center text-center transform scale-95 transition-transform duration-300" id="modalBox">
+      
+      <!-- Cristal Animado no Modal -->
+      <div class="w-16 h-16 rounded-full bg-cyan-950/80 border-2 border-cyan-400 flex items-center justify-center text-cyan-300 text-3xl mb-4 glow-cyan">
+        <i class="fa-solid fa-dungeon"></i>
+      </div>
+
+      <h3 id="modalTitle" class="text-2xl font-black text-amber-300 mb-1" style="font-family: 'Fredoka', sans-serif;">
+        PORTAL ABERTO!
+      </h3>
+      <p id="modalDesc" class="text-sm text-slate-200 mb-6 font-medium">
+        Bem-vindo, guerreiro! Seus espíritos ancestrais responderam ao chamado.
+      </p>
+
+      <button 
+        type="button" 
+        onclick="closeModal()" 
+        class="btn-arena-purple w-full py-3 rounded-xl text-white font-extrabold text-sm uppercase tracking-wider"
+      >
+        <i class="fa-solid fa-shield-halved mr-1"></i> Avançar para o Jogo
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Gerador de Efeitos Sonoros com Sintetizador Web Audio API Nativo
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Som de clique de pedra / runa
+    function playStoneClickSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    // Som de portal mágico ao submeter formulário
+    function playPortalMagicSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        // Tom ascendente místico
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(260, now);
+        osc1.frequency.exponentialRampToValueAtTime(780, now + 0.45);
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.5);
+
+        // Harmônico secundário
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(520, now + 0.1);
+        osc2.frequency.exponentialRampToValueAtTime(1040, now + 0.5);
+        gain2.gain.setValueAtTime(0.18, now + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.005, now + 0.55);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.55);
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    // Alternar som ligado/desligado
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      if (soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+        playStoneClickSound();
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark';
+      }
+    }
+
+    // Modos de Fundo para exportação / transparência no app
+    function setBackgroundMode(mode) {
+      playStoneClickSound();
+      const body = document.getElementById('mainBody');
+      body.classList.remove('bg-mode-solid', 'bg-mode-transparent', 'bg-mode-grid');
+
+      document.getElementById('btnBgSolid').className = 'px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+      document.getElementById('btnBgGrid').className = 'px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+      document.getElementById('btnBgAlpha').className = 'px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+
+      if (mode === 'solid') {
+        body.classList.add('bg-mode-solid');
+        document.getElementById('btnBgSolid').className = 'px-2 py-1 rounded bg-slate-700 text-cyan-300 font-bold';
+      } else if (mode === 'grid') {
+        body.classList.add('bg-mode-grid');
+        document.getElementById('btnBgGrid').className = 'px-2 py-1 rounded bg-slate-700 text-amber-300 font-bold';
+      } else if (mode === 'transparent') {
+        body.classList.add('bg-mode-transparent');
+        document.getElementById('btnBgAlpha').className = 'px-2 py-1 rounded bg-slate-700 text-emerald-400 font-bold';
+      }
+    }
+
+    // Alternar visibilidade da senha
+    function togglePasswordVisibility() {
+      playStoneClickSound();
+      const passInput = document.getElementById('warriorPassword');
+      const icon = document.getElementById('togglePasswordIcon');
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash text-cyan-400';
+      } else {
+        passInput.type = 'password';
+        icon.className = 'fa-solid fa-eye text-slate-400';
+      }
+    }
+
+    // Alternar entre modo "Entrar na Arena" e "Criar Conta de Guerreiro"
+    let isRegisterMode = false;
+
+    function toggleAuthMode() {
+      playStoneClickSound();
+      isRegisterMode = !isRegisterMode;
+
+      const title = document.getElementById('cardTitle');
+      const subtitle = document.getElementById('cardSubtitle');
+      const emailField = document.getElementById('emailFieldContainer');
+      const confirmPass = document.getElementById('confirmPassContainer');
+      const submitLabel = document.getElementById('submitLabel');
+      const submitIcon = document.getElementById('submitIcon');
+      const toggleLabel = document.getElementById('toggleModeLabel');
+      const toggleIcon = document.getElementById('toggleModeIcon');
+      const statusMsg = document.getElementById('statusMessage');
+
+      statusMsg.classList.add('hidden');
+
+      if (isRegisterMode) {
+        title.innerText = 'Forjar Guerreiro';
+        subtitle.innerText = 'Inscreva seu nome nas pedras ancestrais.';
+        emailField.classList.remove('hidden');
+        emailField.classList.add('flex');
+        confirmPass.classList.remove('hidden');
+        confirmPass.classList.add('flex');
+
+        submitLabel.innerText = 'CONCLUIR CADASTRO';
+        submitIcon.className = 'fa-solid fa-shield-virus';
+
+        toggleLabel.innerText = 'JÁ TENHO UMA CONTA';
+        toggleIcon.className = 'fa-solid fa-arrow-left text-amber-400';
+      } else {
+        title.innerText = 'Entrar na Arena';
+        subtitle.innerText = 'Acesse com o nome do seu guerreiro.';
+        emailField.classList.add('hidden');
+        emailField.classList.remove('flex');
+        confirmPass.classList.add('hidden');
+        confirmPass.classList.remove('flex');
+
+        submitLabel.innerText = 'ACESSAR ARENA';
+        submitIcon.className = 'fa-solid fa-right-to-bracket';
+
+        toggleLabel.innerText = 'CRIAR CONTA';
+        toggleIcon.className = 'fa-solid fa-user-plus text-purple-400';
+      }
+    }
+
+    // Processar Envio do Formulário
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const warrior = document.getElementById('warriorName').value.trim();
+      const password = document.getElementById('warriorPassword').value;
+      const statusMsg = document.getElementById('statusMessage');
+
+      if (!warrior || !password) {
+        showStatus('Preencha todos os campos obrigatórios!', 'error');
+        return;
+      }
+
+      if (isRegisterMode) {
+        const passConfirm = document.getElementById('warriorPasswordConfirm').value;
+        if (password !== passConfirm) {
+          showStatus('As senhas não coincidem! Verifique e tente novamente.', 'error');
+          return;
+        }
+      }
+
+      // Sucesso na operação
+      playPortalMagicSound();
+
+      const modalTitle = document.getElementById('modalTitle');
+      const modalDesc = document.getElementById('modalDesc');
+
+      if (isRegisterMode) {
+        modalTitle.innerText = 'GUERREIRO FORJADO!';
+        modalDesc.innerText = `O guerreiro ${warrior} foi registrado com sucesso nas crônicas de PRIMAL. Prepare-se para a batalha!`;
+      } else {
+        modalTitle.innerText = 'PORTAL DA ARENA ABERTO!';
+        modalDesc.innerText = `Bem-vindo de volta à batalha, ${warrior}! Seus aliados elementais aguardam seu comando.`;
+      }
+
+      openModal();
+    }
+
+    function showStatus(text, type) {
+      playStoneClickSound();
+      const statusMsg = document.getElementById('statusMessage');
+      statusMsg.innerText = text;
+      statusMsg.classList.remove('hidden', 'bg-red-900/60', 'text-red-300', 'border-red-500/50', 'bg-emerald-900/60', 'text-emerald-300', 'border-emerald-500/50');
+      
+      if (type === 'error') {
+        statusMsg.classList.add('bg-red-950/80', 'text-red-300', 'border', 'border-red-500/40');
+      } else {
+        statusMsg.classList.add('bg-emerald-950/80', 'text-emerald-300', 'border', 'border-emerald-500/40');
+      }
+    }
+
+    function openModal() {
+      const modal = document.getElementById('modalPortal');
+      const box = document.getElementById('modalBox');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('opacity-100');
+      box.classList.remove('scale-95');
+      box.classList.add('scale-100');
+    }
+
+    function closeModal() {
+      playStoneClickSound();
+      const modal = document.getElementById('modalPortal');
+      const box = document.getElementById('modalBox');
+      modal.classList.remove('opacity-100');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      box.classList.remove('scale-100');
+      box.classList.add('scale-95');
+    }
+
+    // Inicializar áudio no primeiro clique do usuário
+    window.addEventListener('click', function() {
+      if (!audioCtx) {
+        initAudio();
+      }
+    }, { once: true });
+  </script>
+</body>
+</html>

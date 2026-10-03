@@ -178,13 +178,16 @@ body {
     letter-spacing: 1px;
 }
 
-/* --- Intro / Login Screen --- */
+/* --- Intro / Login Screen (Portal de Pedra) --- */
 #intro-screen {
-    z-index: 50; /* Above regular screens */
-    background: radial-gradient(circle at center, #1a0b2e 0%, #05040a 100%);
+    z-index: 50;
+    background:
+        radial-gradient(ellipse at 50% 28%, rgba(70, 35, 110, 0.5) 0%, transparent 55%),
+        radial-gradient(circle at 50% 40%, #161c28 0%, #090c12 80%, #030407 100%);
     overflow: auto;
-    justify-content: flex-start;
-    padding: max(20px, 4vh) 16px 28px;
+    justify-content: center;
+    align-items: center;
+    padding: max(8px, 1.2vh) 10px max(12px, 2vh);
 }
 
 #fireworks-canvas {
@@ -203,10 +206,580 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
     width: 100%;
-    max-width: 440px;
-    padding: 0 8px 12px;
+    max-width: 430px;
+    padding: 0 4px 10px;
+}
+
+.primal-portal {
+    font-family: 'Fredoka', 'Inter', sans-serif;
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+    animation: portalEntrance 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards 0.15s;
+}
+
+@keyframes portalEntrance {
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.font-rune { font-family: 'Cinzel', serif; }
+
+@keyframes runeGlowCyan {
+    0%, 100% { filter: drop-shadow(0 0 4px #0ea5e9) drop-shadow(0 0 10px rgba(56,189,248,0.7)); text-shadow: 0 0 6px #38bdf8; }
+    50% { filter: drop-shadow(0 0 8px #38bdf8) drop-shadow(0 0 18px rgba(14,165,233,0.95)); text-shadow: 0 0 12px #7dd3fc; }
+}
+@keyframes runeGlowOrange {
+    0%, 100% { filter: drop-shadow(0 0 4px #ea580c) drop-shadow(0 0 10px rgba(249,115,22,0.7)); text-shadow: 0 0 6px #f97316; }
+    50% { filter: drop-shadow(0 0 8px #f97316) drop-shadow(0 0 18px rgba(234,88,12,0.95)); text-shadow: 0 0 12px #fdba74; }
+}
+@keyframes floatPortal {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.glow-cyan { animation: runeGlowCyan 2.8s ease-in-out infinite; color: #38bdf8; }
+.glow-orange { animation: runeGlowOrange 3.2s ease-in-out infinite; color: #f97316; }
+.float-slow { animation: floatPortal 6s ease-in-out infinite; }
+
+.stone-slab {
+    background: radial-gradient(circle at 50% 30%, #515a6b 0%, #363d4a 60%, #20252e 100%);
+    box-shadow:
+        inset 0 4px 6px rgba(255, 255, 255, 0.2),
+        inset 0 -6px 12px rgba(0, 0, 0, 0.8),
+        0 15px 35px rgba(0,0,0,0.7);
+    border: 4px solid #6b778d;
+}
+
+.stone-pillar {
+    background: linear-gradient(180deg, #606b7d 0%, #3e4655 45%, #2c3340 100%);
+    box-shadow:
+        inset 2px 2px 5px rgba(255,255,255,0.25),
+        inset -3px -3px 6px rgba(0,0,0,0.6),
+        0 8px 20px rgba(0,0,0,0.5);
+}
+
+.stone-groove {
+    box-shadow: inset 2px 3px 6px rgba(0,0,0,0.85), inset -1px -1px 3px rgba(255,255,255,0.1);
+}
+
+.btn-arena-purple {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    color: #fff;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    background: linear-gradient(180deg, #a855f7 0%, #7e22ce 60%, #581c87 100%);
+    box-shadow:
+        inset 0 2px 4px rgba(255, 255, 255, 0.4),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.7),
+        0 0 15px rgba(168, 85, 247, 0.5),
+        0 6px 12px rgba(0,0,0,0.6);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-arena-purple:hover {
+    background: linear-gradient(180deg, #b76bfb 0%, #8b28de 60%, #642099 100%);
+    box-shadow:
+        inset 0 2px 6px rgba(255, 255, 255, 0.6),
+        0 0 24px rgba(192, 132, 252, 0.85),
+        0 8px 16px rgba(0,0,0,0.7);
+    transform: translateY(-2px);
+}
+
+.btn-arena-purple:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.9), 0 2px 6px rgba(168, 85, 247, 0.4);
+}
+
+.riveted-frame {
+    position: relative;
+    margin-top: 0.55rem;
+    border: 4px solid #3c424f;
+    background: #252b36;
+    border-radius: 16px;
+    padding: 0.4rem;
+    box-shadow:
+        inset 0 3px 5px rgba(0,0,0,0.8),
+        0 4px 10px rgba(0,0,0,0.5),
+        0 0 0 2px #5f6b80;
+}
+
+.riveted-frame .rivet {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #94a3b8;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+.riveted-frame .rivet:nth-child(1) { top: 5px; left: 8px; }
+.riveted-frame .rivet:nth-child(2) { top: 5px; right: 8px; }
+.riveted-frame .rivet:nth-child(3) { bottom: 5px; left: 8px; }
+.riveted-frame .rivet:nth-child(4) { bottom: 5px; right: 8px; }
+
+.stone-step-1 {
+    width: 92%;
+    background: linear-gradient(180deg, #515c6e 0%, #353d4c 100%);
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 6px 14px rgba(0,0,0,0.6);
+    border-top: 2px solid #76849b;
+    border-radius: 12px;
+    padding: 0.45rem 0.75rem;
+    display: flex;
+    justify-content: center;
+}
+
+.stone-step-2 {
+    width: 84%;
+    height: 14px;
+    margin-top: 2px;
+    background: linear-gradient(180deg, #434c5b 0%, #2b323f 100%);
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.15), 0 8px 18px rgba(0,0,0,0.7);
+    border-top: 1px solid #4e5868;
+    border-radius: 0 0 12px 12px;
+}
+
+.stone-step-3 {
+    width: 68%;
+    height: 10px;
+    background: #171a21;
+    border-radius: 0 0 8px 8px;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
+}
+
+.elemental-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: #1c222b;
+    border: 2px solid #374151;
+    border-radius: 12px;
+    padding: 0.7rem 0.85rem;
+    box-shadow: inset 3px 3px 8px rgba(0,0,0,0.85), inset -1px -1px 2px rgba(255,255,255,0.06);
+    transition: all 0.25s ease;
+}
+
+.elemental-input:focus-within {
+    border-color: #38bdf8;
+    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.9), 0 0 14px rgba(56, 189, 248, 0.45);
+}
+
+.elemental-input i { color: #94a3b8; font-size: 0.85rem; flex-shrink: 0; }
+
+.elemental-input input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f1f5f9;
+    font-size: 0.92rem;
+    font-weight: 500;
+    font-family: inherit;
+}
+
+.elemental-input input::placeholder { color: #94a3b8; }
+
+.portal-top {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+}
+
+/* Selo circular: pedra-chave + moldura + logo vazando à frente */
+.portal-seal {
+    --seal-size: min(340px, 86vw);
+    --rune-radius: calc(var(--seal-size) * 0.475);
+    position: relative;
+    width: var(--seal-size);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 12;
+    overflow: visible;
+    /* espaço para chifres/soco vazarem sem cortar */
+    margin: 0.6rem 0 0.85rem;
+}
+
+.portal-keystone {
+    position: absolute;
+    top: -0.35rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    width: 3.6rem;
+    height: 2.55rem;
+    background: linear-gradient(180deg, #7a879c 0%, #4a5568 55%, #364152 100%);
+    border-radius: 10px 10px 6px 6px;
+    border: 2px solid #93a4bc;
+    border-bottom: 2px solid #5f6b80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow:
+        0 6px 14px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+/* “Pescoço” de pedra ligando o quadrado ao anel */
+.portal-keystone::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.55rem;
+    height: 12px;
+    background: linear-gradient(180deg, #556273 0%, #3d4656 100%);
+    border-left: 2px solid #7b8799;
+    border-right: 2px solid #7b8799;
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,0.45);
+    z-index: -1;
+}
+
+.portal-rune-ring {
+    position: absolute;
+    inset: -2%;
+    z-index: 4;
+    pointer-events: none;
+    overflow: visible;
+}
+
+/* Apenas aro externo metálico — os hieróglifos da logo ficam visíveis */
+.rune-ring-stone {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 30%, #6b778d 0%, #4a5568 42%, #2c3340 78%, #1a1f28 100%);
+    -webkit-mask: radial-gradient(circle, transparent 86%, #000 87%);
+    mask: radial-gradient(circle, transparent 86%, #000 87%);
+    box-shadow:
+        0 0 0 3px #7d8aa0,
+        0 14px 30px rgba(0,0,0,0.55),
+        0 0 40px rgba(56, 189, 248, 0.12),
+        0 0 40px rgba(249, 115, 22, 0.1);
+}
+
+.rune-ring-inner {
+    display: none;
+}
+
+.rune-glyphs {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+}
+
+.rune-glyphs .rg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: -0.575rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(0.72rem, 2.6vw, 0.95rem);
+    font-weight: 800;
+    transform: rotate(var(--a)) translateY(calc(var(--rune-radius) * -1)) rotate(calc(var(--a) * -1));
+}
+
+.rg-1  { --a: -100deg; }
+.rg-2  { --a: -77deg; }
+.rg-3  { --a: -55deg; }
+.rg-4  { --a: -33deg; }
+.rg-5  { --a: -12deg; }
+.rg-6  { --a: 10deg; }
+.rg-7  { --a: 32deg; }
+.rg-8  { --a: 54deg; }
+.rg-9  { --a: 76deg; }
+.rg-10 { --a: 98deg; }
+.rg-11 { --a: 120deg; }
+.rg-12 { --a: 142deg; }
+.rg-13 { --a: 164deg; }
+.rg-14 { --a: 186deg; }
+.rg-15 { --a: -142deg; }
+.rg-16 { --a: -121deg; }
+
+/* Logo inteira à frente: hieróglifos + soco/chifres vazando (sem clip) */
+.portal-logo-disc {
+    position: relative;
+    z-index: 18;
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    transform: translateY(-2px) scale(1.1);
+    filter:
+        drop-shadow(0 0 28px rgba(168, 85, 247, 0.45))
+        drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85));
+}
+
+.portal-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+    /* sem border-radius para não cortar soco/chifres/anel */
+    border-radius: 0;
+}
+
+.portal-logo-brace {
+    position: absolute;
+    bottom: -0.55rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    background: linear-gradient(180deg, #556274 0%, #3a4454 100%);
+    padding: 0.18rem 1rem;
+    border-radius: 8px;
+    border: 2px solid #76849c;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.portal-body {
+    width: 100%;
+    margin-top: -0.2rem;
+    display: flex;
+    align-items: stretch;
+    z-index: 10;
+}
+
+.portal-pillar {
+    width: 2.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 0.25rem;
+    margin: 0.5rem 0;
+    z-index: 10;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+}
+
+.portal-pillar-left {
+    border-radius: 16px 0 0 16px;
+    border-left: 2px solid #6c7990;
+    border-top: 2px solid #6c7990;
+    border-bottom: 2px solid #6c7990;
+}
+
+.portal-pillar-right {
+    border-radius: 0 16px 16px 0;
+    border-right: 2px solid #6c7990;
+    border-top: 2px solid #6c7990;
+    border-bottom: 2px solid #6c7990;
+}
+
+.pillar-emblem {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    background: #1b2330;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.portal-pillar-right .pillar-emblem {
+    border-color: rgba(249, 115, 22, 0.45);
+    background: #2d1b18;
+}
+
+.pillar-runes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: #38bdf8;
+    margin: 0.5rem 0;
+}
+
+.portal-altar {
+    flex: 1;
+    border-radius: 16px;
+    padding: 1rem 0.95rem 1.05rem;
+    z-index: 20;
+    border-top: 2px solid #8291aa;
+    display: flex;
+    flex-direction: column;
+}
+
+.portal-altar-groove {
+    width: 5.5rem;
+    height: 6px;
+    background: #29303d;
+    border-radius: 999px;
+    margin: 0 auto 0.75rem;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.7);
+}
+
+.portal-titles {
+    text-align: center;
+    margin-bottom: 0.85rem;
+}
+
+.portal-titles h2 {
+    margin: 0;
+    color: #f3e5ca;
+    font-size: clamp(1.35rem, 5vw, 1.65rem);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+}
+
+.portal-titles .auth-lead {
+    margin: 0.2rem 0 0;
+    color: #b0bec5;
+    font-size: clamp(0.78rem, 2.8vw, 0.9rem);
+    font-weight: 500;
+}
+
+.primal-portal .auth-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    width: 100%;
+}
+
+.portal-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 0.35rem;
+}
+
+.portal-totem {
+    position: absolute;
+    left: -0.35rem;
+    z-index: 2;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+}
+
+.totem-fire {
+    background: #271f23;
+    border: 1px solid rgba(239, 68, 68, 0.6);
+    color: #ef4444;
+}
+
+.totem-shield {
+    background: #202731;
+    border: 1px solid #64748b;
+    color: #fbbf24;
+}
+
+.totem-key {
+    background: #2a2430;
+    border: 1px solid rgba(168, 85, 247, 0.55);
+    color: #d8b4fe;
+}
+
+.portal-crystal {
+    position: absolute;
+    right: -0.2rem;
+    z-index: 2;
+    color: #67e8f9;
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 6px #38bdf8);
+    pointer-events: none;
+}
+
+.portal-field .elemental-input {
+    margin: 0 0.55rem;
+    padding-left: 1.35rem;
+}
+
+.primal-portal .auth-msg {
+    min-height: 1rem;
+    margin: 0;
+    color: #fca5a5;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.portal-steps {
+    width: 100%;
+    margin-top: -0.35rem;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.portal-step-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(100, 116, 139, 0.4);
+    color: #cbd5e1;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.86rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.15s ease, color 0.15s ease;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);
+}
+
+.portal-step-btn i { color: #c084fc; }
+.portal-step-btn:hover { color: #fff; transform: scale(1.04); }
+.portal-step-btn:active { transform: scale(0.96); }
+
+@media (max-width: 380px) {
+    .portal-pillar { width: 2.15rem; }
+    .portal-seal { --seal-size: min(290px, 90vw); }
+    .portal-logo-disc { transform: translateY(-2px) scale(1.08); }
+    .portal-altar { padding: 0.85rem 0.7rem 0.95rem; }
+    .portal-totem { display: none; }
+    .portal-crystal { display: none; }
+    .portal-field .elemental-input { margin: 0; padding-left: 0.85rem; }
+}
+
+@media (max-height: 700px) {
+    .portal-seal { --seal-size: min(250px, 52vh); }
+    .portal-logo-disc { transform: translateY(-1px) scale(1.08); }
+    .portal-titles h2 { font-size: 1.25rem; }
+    .portal-altar { padding: 0.7rem 0.75rem 0.8rem; }
+    .elemental-input { padding: 0.55rem 0.75rem; }
 }
 
 .logo-container-principal {
