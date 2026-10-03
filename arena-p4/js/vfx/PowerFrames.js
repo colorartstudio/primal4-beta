@@ -1,6 +1,8 @@
-// Sequência de frames da liberação de cada poder.
+// Fonte de verdade do momento do poder. A aparência mora em PowerVfx.js.
 // frame 0 = carga. releaseAt = o frame em que o golpe existe.
-// castLength = último frame desenhado no corpo.
+// castLength = último frame da apresentação (visualEnd = castLength - 1).
+
+import PowerVfx from './PowerVfx.js';
 
 export const POWER_CASTS = {
     ignis: {
@@ -15,7 +17,9 @@ export const POWER_CASTS = {
         lift: -7,
         hitLock: 16,
         radius: 118,
-        shake: 8
+        shake: 8,
+        frames: { chargeStart: 0, focus: 3, tension: 6, release: 8, visualEnd: 29 },
+        vfx: { charge: 'fire_charge', release: 'fire_explosion', aftermath: 'fire_embers' }
     },
     marina: {
         name: 'TSUNAMI',
@@ -33,7 +37,9 @@ export const POWER_CASTS = {
         waveSpeed: 11,
         waveW: 78,
         waveH: 96,
-        shake: 6
+        shake: 6,
+        frames: { chargeStart: 0, focus: 3, mass: 6, release: 8, visualEnd: 23 },
+        vfx: { charge: 'water_charge', release: 'water_wave', aftermath: 'water_trail' }
     },
     terra: {
         name: 'MANTO',
@@ -50,7 +56,9 @@ export const POWER_CASTS = {
         shieldDuration: 90,
         damageReduction: 0.45,
         knockbackKeep: 0.5,
-        shake: 7
+        shake: 7,
+        frames: { chargeStart: 0, focus: 3, orbit: 6, release: 8, visualEnd: 25 },
+        vfx: { charge: 'earth_charge', release: 'earth_armor', aftermath: 'earth_shield' }
     },
     zephyr: {
         name: 'TORNADO',
@@ -60,6 +68,7 @@ export const POWER_CASTS = {
         releaseAt: 6,
         dashStart: 6,
         dashEnd: 16,
+        dashSpeed: 13,
         cooldown: 160,
         damage: 14,
         knockback: 8,
@@ -68,7 +77,9 @@ export const POWER_CASTS = {
         radius: 52,
         boostFrames: 70,
         speedBoost: 1.65,
-        shake: 5
+        shake: 5,
+        frames: { chargeStart: 0, focus: 3, release: 6, dashLast: 15, visualEnd: 27 },
+        vfx: { charge: 'wind_charge', release: 'wind_dash', aftermath: 'wind_buff' }
     }
 };
 
@@ -76,6 +87,8 @@ export default class PowerShow {
     constructor() {
         this.waves = [];
         this.callout = null;
+        this.vfx = new PowerVfx();
+        this.shakeRequest = 0;
     }
 
     onCast(player) {
@@ -91,7 +104,7 @@ export default class PowerShow {
         const dir = player.cast.facing;
 
         if (player.element === 'zephyr' && f >= spec.dashStart && f < spec.dashEnd) {
-            player.velocityX = dir * 13;
+            player.velocityX = dir * spec.dashSpeed;
             player.velocityY *= 0.35;
             return;
         }
@@ -100,9 +113,20 @@ export default class PowerShow {
         }
     }
 
+    noteShake(amount) {
+        if (amount > this.shakeRequest) this.shakeRequest = amount;
+    }
+
+    consumeShake() {
+        const amount = this.shakeRequest;
+        this.shakeRequest = 0;
+        return amount;
+    }
+
     // Roda depois da física. Devolve os golpes que nasceram neste frame.
     resolve(players) {
         const hits = [];
+        this.shakeRequest = 0;
 
         players.forEach((player) => {
             if (!player.cast) return;
@@ -110,13 +134,15 @@ export default class PowerShow {
             if (!spec) return;
             const foe = players.find((p) => p !== player);
             const f = player.cast.frame;
+            this.noteShake(this.vfx.emitCast(player, spec, f));
 
-            if (f === spec.releaseAt && foe) {
+            if (f === spec.frames.release && foe) {
                 if (player.element === 'marina') {
                     this.waves.push(this.makeWave(player, spec));
                 } else if (player.element === 'ignis' || player.element === 'terra') {
                     if (this.circleHits(player, foe, spec.radius)) {
                         hits.push({ attacker: player, defender: foe, spec });
+                        this.vfx.impact(player.element, foe, player.cast.facing);
                     }
                 } else if (player.element === 'zephyr') {
                     player.cast.dashed = false;
@@ -135,6 +161,7 @@ export default class PowerShow {
                 if (this.circleHits(player, foe, spec.radius)) {
                     player.cast.dashed = true;
                     hits.push({ attacker: player, defender: foe, spec });
+                    this.vfx.impact(player.element, foe, player.cast.facing);
                 }
             }
 
@@ -148,13 +175,18 @@ export default class PowerShow {
             const wave = this.waves[i];
             wave.x += wave.vx;
             wave.frame += 1;
+            this.vfx.emitFoam(wave);
             const foe = players.find((p) => p !== wave.owner);
             if (foe && !wave.hit && this.rectHits(wave, foe)) {
                 wave.hit = true;
                 hits.push({ attacker: wave.owner, defender: foe, spec: wave.spec });
+                this.vfx.impact('marina', foe, wave.dir);
             }
             if (wave.frame >= wave.life) this.waves.splice(i, 1);
         }
+
+        players.forEach((player) => this.vfx.emitAura(player));
+        this.vfx.update();
 
         if (this.callout) {
             this.callout.life -= 1;
@@ -199,50 +231,33 @@ export default class PowerShow {
             top + wave.h > defender.y;
     }
 
+    shownFrame(player) {
+        if (!player.cast) return null;
+        const frame = player.cast.frame - 1;
+        return frame < 0 ? null : frame;
+    }
+
     drawBehind(ctx, player) {
-        if (!player.cast) return;
+        this.vfx.drawStatus(ctx, player, 'back');
+        const frame = this.shownFrame(player);
+        if (frame == null) return;
         const spec = POWER_CASTS[player.element];
         if (!spec) return;
-        const f = player.cast.frame;
-        if (f >= spec.releaseAt) return;
-        const cx = player.x + player.width / 2;
-        const cy = player.y + player.height / 2;
-        const t = f / spec.releaseAt;
-        ctx.save();
-        ctx.globalAlpha = 0.35 + t * 0.4;
-        ctx.strokeStyle = spec.color;
-        ctx.fillStyle = spec.core;
-        ctx.lineWidth = 2;
-        const rings = 3;
-        for (let i = 0; i < rings; i++) {
-            const wobble = Math.sin(f * 0.8 + i) * 4;
-            const r = 10 + i * 8 + t * 18 + wobble;
-            ctx.beginPath();
-            ctx.arc(cx, cy, r, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        ctx.restore();
+        this.vfx.drawCastBack(ctx, player, spec, frame);
     }
 
     drawFront(ctx, player) {
-        if (!player.cast) return;
+        this.vfx.drawStatus(ctx, player, 'front');
+        const frame = this.shownFrame(player);
+        if (frame == null) return;
         const spec = POWER_CASTS[player.element];
         if (!spec) return;
-        const f = player.cast.frame;
-        const cx = player.x + player.width / 2;
-        const cy = player.y + player.height * 0.45;
-        const dir = player.cast.facing;
+        this.vfx.drawCastFront(ctx, player, spec, frame);
 
-        ctx.save();
-        if (player.element === 'ignis') this.drawIgnis(ctx, cx, cy, f, dir, spec);
-        if (player.element === 'marina') this.drawMarinaCharge(ctx, cx, cy, f, dir, spec);
-        if (player.element === 'terra') this.drawTerra(ctx, cx, player.y + player.height, f, spec);
-        if (player.element === 'zephyr') this.drawZephyr(ctx, cx, cy, f, dir, spec);
-        ctx.restore();
-
-        if (f < 18) {
+        if (frame < 18) {
+            const cx = player.x + player.width / 2;
             ctx.save();
-            ctx.globalAlpha = 1 - f / 18;
+            ctx.globalAlpha = 1 - frame / 18;
             ctx.fillStyle = spec.core;
             ctx.font = 'bold 13px sans-serif';
             ctx.textAlign = 'center';
@@ -251,138 +266,16 @@ export default class PowerShow {
         }
     }
 
-    drawIgnis(ctx, cx, cy, frame, dir, spec) {
-        const pose = Math.min(7, Math.floor(frame / 3));
-        ctx.translate(cx, cy);
-        if (pose < 3) {
-            ctx.globalAlpha = 0.85;
-            for (let i = 0; i < 6; i++) {
-                const a = (frame * 0.45 + i) * 0.9;
-                const r = 8 + pose * 6;
-                ctx.fillStyle = i % 2 ? spec.color : spec.core;
-                ctx.beginPath();
-                ctx.arc(Math.cos(a) * r, Math.sin(a) * r * 0.65, 3 + pose, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            return;
-        }
-        const boom = (pose - 2) / 5;
-        ctx.globalAlpha = 1 - boom * 0.75;
-        ctx.strokeStyle = spec.color;
-        ctx.fillStyle = spec.core;
-        ctx.lineWidth = 4 - boom * 2;
-        ctx.beginPath();
-        ctx.arc(dir * 10, 6, 18 + boom * spec.radius, 0, Math.PI * 2);
-        ctx.stroke();
-        const tongues = 8;
-        for (let i = 0; i < tongues; i++) {
-            const a = (Math.PI * 2 * i) / tongues + frame * 0.05;
-            const len = 20 + boom * (spec.radius - 10);
-            ctx.beginPath();
-            ctx.moveTo(dir * 10, 6);
-            ctx.lineTo(dir * 10 + Math.cos(a) * len, 6 + Math.sin(a) * len * 0.72);
-            ctx.stroke();
-        }
+    drawWorldBack(ctx) {
+        this.vfx.drawLayer(ctx, 'back');
     }
 
-    drawMarinaCharge(ctx, cx, cy, frame, dir, spec) {
-        if (frame >= spec.releaseAt) return;
-        ctx.translate(cx, cy);
-        ctx.globalAlpha = 0.9;
-        for (let i = 0; i < 5; i++) {
-            const gather = 1 - frame / spec.releaseAt;
-            const a = frame * 0.5 + i;
-            ctx.fillStyle = i % 2 ? spec.color : spec.core;
-            ctx.beginPath();
-            ctx.ellipse(
-                Math.cos(a) * 16 * gather + dir * 8,
-                Math.sin(a) * 10,
-                5,
-                3,
-                a,
-                0,
-                Math.PI * 2
-            );
-            ctx.fill();
-        }
-    }
-
-    drawTerra(ctx, cx, feet, frame, spec) {
-        const pose = Math.min(6, Math.floor(frame / 3));
-        ctx.translate(cx, feet);
-        if (pose < 3) {
-            ctx.fillStyle = spec.color;
-            ctx.globalAlpha = 0.9;
-            for (let i = -2; i <= 2; i++) {
-                const h = 6 + pose * 8 + Math.abs(i);
-                ctx.fillRect(i * 14 - 5, -h, 10, h);
-            }
-            return;
-        }
-        const open = (pose - 2) / 4;
-        ctx.globalAlpha = 0.85 - open * 0.4;
-        ctx.strokeStyle = spec.color;
-        ctx.fillStyle = 'rgba(61, 222, 106, 0.18)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.ellipse(0, -28, 28 + open * 54, 36 + open * 20, 0, Math.PI, 0);
-        ctx.fill();
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(0, -28, 16 + open * 40, 0, Math.PI * 2);
-        ctx.stroke();
-    }
-
-    drawZephyr(ctx, cx, cy, frame, dir, spec) {
-        const pose = Math.min(8, Math.floor(frame / 3));
-        ctx.translate(cx, cy);
-        ctx.strokeStyle = spec.color;
-        ctx.fillStyle = spec.core;
-        ctx.lineWidth = 2;
-        ctx.globalAlpha = pose < 2 ? 0.7 : 0.9;
-        const turns = pose < 2 ? 1 : 2 + (pose - 2);
-        for (let i = 0; i < turns; i++) {
-            ctx.beginPath();
-            ctx.arc(dir * pose * 2, 0, 12 + i * 10, frame * 0.4, frame * 0.4 + Math.PI * 1.4);
-            ctx.stroke();
-        }
-        if (pose >= 2) {
-            ctx.globalAlpha = 0.8;
-            for (let i = 0; i < 4; i++) {
-                const tail = -dir * (16 + i * 14 + pose * 3);
-                ctx.beginPath();
-                ctx.ellipse(tail, (i - 1.5) * 8, 10 + pose, 3, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
+    drawWorldFront(ctx) {
+        this.vfx.drawLayer(ctx, 'front');
     }
 
     drawWaves(ctx) {
-        this.waves.forEach((wave) => {
-            const k = 1 - wave.frame / wave.life;
-            ctx.save();
-            ctx.translate(wave.x, wave.y);
-            ctx.globalAlpha = Math.max(0.25, k);
-            ctx.fillStyle = 'rgba(30, 200, 255, 0.35)';
-            ctx.strokeStyle = '#e8fbff';
-            ctx.lineWidth = 2;
-            const crest = Math.sin(wave.frame * 0.7) * 8;
-            ctx.beginPath();
-            ctx.moveTo(-wave.w / 2, 8);
-            ctx.quadraticCurveTo(-wave.w * 0.15, -wave.h / 2 + crest, wave.w * 0.05 * wave.dir, -wave.h / 3);
-            ctx.quadraticCurveTo(wave.w * 0.35 * wave.dir, crest, wave.w / 2 * wave.dir, 10);
-            ctx.quadraticCurveTo(0, wave.h / 3, -wave.w / 2, 8);
-            ctx.fill();
-            ctx.stroke();
-            ctx.fillStyle = '#e8fbff';
-            for (let i = 0; i < 4; i++) {
-                ctx.globalAlpha = k * 0.8;
-                ctx.beginPath();
-                ctx.arc(wave.dir * (i * 10 - 10), -10 - (wave.frame + i * 3) % 18, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.restore();
-        });
+        this.waves.forEach((wave) => this.vfx.drawWave(ctx, wave));
     }
 
     drawCallout(ctx, width) {

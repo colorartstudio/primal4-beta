@@ -312,10 +312,10 @@ export default class GameEngine {
         this.players.forEach((player) => {
             if (player.cast && player.cast.frame === 0) {
                 this.powerShow.onCast(player);
-                this.shake = Math.max(this.shake, 4);
             }
         });
         const powerHits = this.powerShow.resolve(this.players);
+        this.shake = Math.max(this.shake, this.powerShow.consumeShake());
         powerHits.forEach((hit) => this.applyPowerHit(hit.attacker, hit.defender, hit.spec));
         if (this.shake > 0) this.shake *= 0.86;
         
@@ -560,32 +560,10 @@ export default class GameEngine {
             ctx.restore();
         });
         
+        this.powerShow.drawWorldBack(ctx);
+
         // Desenhar jogadores
         this.players.forEach(player => {
-            // Desenhar Aura de Especial (Se Ativo)
-            if (player.activePower && player.activePower.duration > 0) {
-                const auraColor = this.getEffectColor(player.activePower.type);
-                const pulse = Math.sin(Date.now() / 100) * 5; // Pulso suave
-                
-                ctx.save();
-                ctx.globalAlpha = 0.4;
-                ctx.fillStyle = auraColor;
-                ctx.shadowColor = auraColor;
-                ctx.shadowBlur = 20;
-                
-                // Desenhar aura oval ao redor do personagem
-                ctx.beginPath();
-                ctx.ellipse(
-                    player.x + player.width / 2, 
-                    player.y + player.height / 2, 
-                    (player.width / 1.5) + pulse, 
-                    (player.height / 1.5) + pulse, 
-                    0, 0, Math.PI * 2
-                );
-                ctx.fill();
-                ctx.restore();
-            }
-
             this.powerShow.drawBehind(ctx, player);
             this.drawCharacter(ctx, player);
             this.powerShow.drawFront(ctx, player);
@@ -628,6 +606,7 @@ export default class GameEngine {
         });
 
         this.powerShow.drawWaves(ctx);
+        this.powerShow.drawWorldFront(ctx);
         this.powerShow.drawCallout(ctx, this.canvas.width);
 
         // Desenhar efeitos (ACIMA de tudo para visibilidade)
@@ -635,17 +614,12 @@ export default class GameEngine {
         ctx.restore();
     }
     
-    getEffectColor(type) {
-        const colors = {
-            'firestorm': '#ff4500', // Ignis
-            'tsunami': '#00bfff',   // Marina
-            'shield': '#32cd32',    // Terra
-            'tornado': '#ffd700',   // Zephyr
-        };
-        return colors[type] || '#ffffff';
-    }
-
     walkPose(player) {
+        if (player.cast && player.element === 'zephyr') {
+            const frame = player.cast.frame - 1;
+            if (frame >= 3 && frame < 6) return { rot: -0.2, sx: 1.03, sy: 0.96, step: -1 };
+            if (frame >= 6 && frame < 16) return { rot: -0.42, sx: 1.14, sy: 0.88, step: -1 };
+        }
         const stepping = player.isGrounded && Math.abs(player.velocityX) > 0.8 && !player.cast;
         if (!stepping) {
             if (!player.isGrounded) {
